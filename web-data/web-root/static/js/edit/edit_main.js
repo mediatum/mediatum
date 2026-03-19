@@ -82,6 +82,26 @@ function hideContextMenuForNode(node) {
 }
 
 
+function _paste_container_here(container, targetId)  {
+    let src = container.parent.key;
+    let obj = container.key;
+    if (!($.isNumeric(src)))  src = container.parent.title;
+    if (src === targetId)  {  // nothing to be done: user tries to paste node to parent
+        flag_cut_mode = false;
+        node_to_paste_li.removeClass('fancytree-node-disabled');
+        return false;
+    }
+    if (!($.isNumeric(src) && $.isNumeric(obj) && $.isNumeric(targetId)))  {
+        throw "moving node failed: node id is not an integer";
+    }
+    edit_action_sync('move', src, obj, targetId);
+    flag_cut_mode = false;
+    new_path_endpoint = obj;
+    if (currentpath)  $('.ui-layout-center').attr('src',`/edit/edit_content?srcnodeid=${obj}&id=${obj}&tab=content`);
+    return true;
+}
+
+
 function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) {
     // arguments: '#(h|c)tree-node-'+data.node.key, get(hometree|coltree)(), '(h|c)tree-node-', data.node
     $(function(){
@@ -170,31 +190,10 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                 res = false;
                                 break;
                             case "paste_container_here":
-                                var src = node_to_paste.parent.key;
-                                var obj = node_to_paste.key;
-                                var dest = node.key;
-                                if(!($.isNumeric(src)))
-                                {
-                                    src = node_to_paste.parent.title;
-                                };
-                                if (src == dest) { // nothing to be done: user tries to paste node to parent
-                                    flag_cut_mode = false;
-                                    node_to_paste_li.removeClass('fancytree-node-disabled');
-                                    res = false;
-                                    break;
+                                if (_paste_container_here(node_to_paste, node.key))  {
+                                    reloadHomeTree();
+                                    reloadColTree();
                                 }
-                                if (!($.isNumeric(src) && $.isNumeric(obj) && $.isNumeric(dest))) {
-                                    throw "moving node failed: node id is not an integer";
-                                };
-                                ret = edit_action_sync('move', src, obj, dest);
-                                flag_cut_mode = false;
-                                new_path_endpoint = obj;
-                                if (currentpath) {
-                                    $('.ui-layout-center').attr('src',
-                                    '/edit/edit_content?srcnodeid='+new_path_endpoint+'&id='+new_path_endpoint+'&tab=content');
-                                }
-                                reloadHomeTree();
-                                reloadColTree();
                                 res = false;
                                 break;
                             case "delete":
@@ -256,31 +255,7 @@ function contextmenu_collections(selector) {
                             reloadColTree();
                         }
                         if (key == "paste_container_here") {
-                            var src = node_to_paste.parent.key;
-                            var obj = node_to_paste.key;
-                            var dest = collectionsid;
-                            if(!($.isNumeric(src)))
-                            {
-                                src = node_to_paste.parent.title;
-                            };
-                            if (src == dest) { // nothing to be done: user tries to paste node to parent
-                                flag_cut_mode = false;
-                                node_to_paste_li.removeClass('fancytree-node-disabled');
-                            }
-                            else
-                            {
-                                if (!($.isNumeric(src) && $.isNumeric(obj) && $.isNumeric(dest))) {
-                                    throw "moving node failed: node id is not an integer";
-                                };
-                                ret = edit_action_sync('move', src, obj, dest);
-                                flag_cut_mode = false;
-                                new_path_endpoint = obj;
-                                if (currentpath) {
-                                    $('.ui-layout-center').attr('src',
-                                    '/edit/edit_content?srcnodeid='+new_path_endpoint+'&id='+new_path_endpoint+'&tab=content');
-                                }
-                                reloadColTree();
-                            }
+                            if (_paste_container_here(node_to_paste, collectionsid))  reloadColTree();
                         }
                     },
 

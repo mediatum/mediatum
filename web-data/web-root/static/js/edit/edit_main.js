@@ -212,12 +212,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                 res = false;
                                 break;
                             default:
-                                alert("Todo: appply action '" + action + "' to node " + node + '-' + node.title + '-' + node.key);
-                                var keys = [];
-                                for(var k in node.data) keys.push(k);
-                                alert("total " + keys.length + " keys: " + keys);
-                                alert("node.title: " + node.title);
-                                alert("node.key  : " + node.key);
+                                console.debug("Todo: appply action '" + action + "' to node " + node + '-' + node.title + '-' + node.key);
                                 res = false;
                             }
                         current_tree.widget.options.keyboard = FANCYTREE_KEYBOARD;

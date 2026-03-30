@@ -1,0 +1,44 @@
+# see http://citationstyles.org/downloads/specification.html#appendix-iii-types
+- article
+- article-magazine
+- article-newspaper
+- article-journal
+- bill
+- book
+- book-chapter
+- broadcast
+- chapter
+- dataset
+- _default
+- entry
+- entry-dictionary
+- entry-encyclopedia
+- figure
+- graphic
+- interview
+- legislation
+- legal_case
+- manuscript
+- map
+- misc
+- motion_picture
+- musical_score
+- _null
+- pamphlet
+- paper-conference
+- patent
+- post
+- post-weblog
+- personal_communication
+- report
+- review
+- review-book
+- song
+- speech
+- thesis
+- treaty
+- webpage
+
+# types not in CSL 1.0.1, but returned by dx.doi.org server
+- journal-article
+- proceedings-article

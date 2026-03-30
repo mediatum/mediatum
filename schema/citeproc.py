@@ -47,57 +47,11 @@ def _get_fields_for_types(typ):
     return frozenset(fields[typ])
 
 
-# see http://citationstyles.org/downloads/specification.html#appendix-iii-types
-CSL_TYPES = [
-    'article',
-    'article-magazine',
-    'article-newspaper',
-    'article-journal',
-    'bill',
-    'book',
-    'book-chapter',
-    'broadcast',
-    'chapter',
-    'dataset',
-    '_default',
-    'entry',
-    'entry-dictionary',
-    'entry-encyclopedia',
-    'figure',
-    'graphic',
-    'interview',
-    'legislation',
-    'legal_case',
-    'manuscript',
-    'map',
-    'misc',
-    'motion_picture',
-    'musical_score',
-    '_null',
-    'pamphlet',
-    'paper-conference',
-    'patent',
-    'post',
-    'post-weblog',
-    'personal_communication',
-    'report',
-    'review',
-    'review-book',
-    'song',
-    'speech',
-    'thesis',
-    'treaty',
-    'webpage'
-]
+@_backports.functools_lru_cache.lru_cache()
+def get_csl_types():
+    with open(_os.path.normpath(_os.path.join(__file__, "..", "citeproc-csl-types.yaml")), "rb") as f:
+        return frozenset(_ruamel.yaml.YAML(typ="safe", pure=True).load(f))
 
-TYPES = [
-    "_default",  # fallback type if no mapping is defined
-    "_null",  # fallback type if type not given
-    'journal-article',  # type not in CSL 1.0.1, but returned by dx.doi.org server
-    'proceedings-article'  # type not in CSL 1.0.1, but returned by dx.doi.org server
-] + CSL_TYPES
-
-TYPE_SET = set(TYPES)
 
 class DOINotFound(Exception):
     pass
@@ -211,7 +165,7 @@ def import_csl(record, target=None, name=None, testing=False):
     if not typ:
         logg.warning("no type given in CSL import, using _null")
         typ = "_null"
-    if typ not in TYPE_SET:
+    elif typ not in get_csl_types():
         logg.warning("unknown type %s given in CSL import, using _default", typ)
         typ = "_default"
     schema = importbase.get_import_mapping(u"citeproc", typ)

@@ -139,17 +139,6 @@ class InvalidDOI(Exception):
     pass
 
 
-def check_mappings():
-    types, ambiguous_types = importbase.get_all_import_mappings("citeproc")
-    for typ in TYPES:
-        if typ not in types:
-            logg.debug("%s is not associated with any metatype", type)
-        else:
-            logg.debug("%s -> %s", typ, types[typ])
-    for typ, schemas in ambiguous_types.iteritems():
-        logg.warning("ambiguous mapping %s -> %s", typ, schemas)
-
-
 def convert_csl_date(date_value):
     '''Take date in CSL format and return a python date object.
     Date fields consist of "date-parts", in the order year -> month -> day.

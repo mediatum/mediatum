@@ -12,11 +12,18 @@ from __future__ import print_function
 
 from collections import defaultdict
 import datetime
+import itertools as _itertools
 import json as _json
 import logging
+import os as _os
+import os.path as _
 import re
 
+import backports as _backports
+import backports.functools_lru_cache as _
 import requests
+import ruamel as _ruamel
+import ruamel.yaml as _
 
 import core as _core
 import utils.utils as _utils_utils
@@ -31,49 +38,14 @@ DX_DOI_URL = "http://dx.doi.org/"
 logg = logging.getLogger(__name__)
 
 
-class CSLField(object):
+@_backports.functools_lru_cache.lru_cache()
+def _get_fields_for_types(typ):
+    with open(_os.path.normpath(_os.path.join(__file__, "..", "citeproc-fields.yaml")), "rb") as f:
+        fields = _ruamel.yaml.YAML(typ="safe", pure=True).load(f)
+    total = tuple(_itertools.chain.from_iterable(fields.itervalues()))
+    assert len(total) == len(frozenset(total))
+    return frozenset(fields[typ])
 
-    def __init__(self, fieldtype):
-        self.fieldtype = fieldtype
-
-
-# CSL support special field types "name", "date" or "number".
-# Other fields are "standard"
-# Missing fields are assumed to be "standard"
-# see http://citationstyles.org/downloads/specification.html#appendix-iv-variables
-FIELDS = defaultdict(lambda: CSLField("standard"), {
-    # name fields
-    "author": CSLField("name"),
-    "collection-editor": CSLField("name"),
-    "composer": CSLField("name"),
-    "container-author": CSLField("name"),
-    "director": CSLField("name"),
-    "editor": CSLField("name"),
-    "editorial-director": CSLField("name"),
-    "illustrator": CSLField("name"),
-    "interviewer": CSLField("name"),
-    "original-author": CSLField("name"),
-    "recipient": CSLField("name"),
-    "reviewed-author": CSLField("name"),
-    "translator": CSLField("name"),
-    # date fields
-    "accessed": CSLField("date"),
-    "container": CSLField("date"),
-    "event-date": CSLField("date"),
-    "issued": CSLField("date"),
-    "original-date": CSLField("date"),
-    "submitted": CSLField("date"),
-    # number fields
-    "chapter-number": CSLField("number"),
-    "collection-number": CSLField("number"),
-    "edition": CSLField("number"),
-    "issue": CSLField("number"),
-    "number": CSLField("number"),
-    "number-of-pages": CSLField("number"),
-    "number-of-volumes": CSLField("number"),
-    "volume": CSLField("number"),
-}
-)
 
 # see http://citationstyles.org/downloads/specification.html#appendix-iii-types
 CSL_TYPES = [
@@ -263,17 +235,17 @@ def import_csl(record, target=None, name=None, testing=False):
         if value is None:
             return None
         try:
-            if FIELDS[key].fieldtype == "date":
+            if key in _get_fields_for_types("date"):
                 return convert_csl_date(value)
-            elif FIELDS[key].fieldtype == "name":
+            elif key in _get_fields_for_types("name"):
                 return convert_csl_names(value)
-            elif FIELDS[key].fieldtype == "number":
+            elif key in _get_fields_for_types("number"):
                 if not check_number(value):
                     logg.warning("field '%s' is of type number and contains an illegal value: '%s'!"
                               "See http://citationstyles.org/downloads/specification.html#number",
                               key, value)
                 return unicode(value)
-            elif FIELDS[key].fieldtype == "standard" and isinstance(value, list):
+            elif isinstance(value, list):
                 value = u''.join(value)
             # for standard fields which already are unicode objects
             return unicode(value)

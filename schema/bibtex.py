@@ -39,40 +39,6 @@ from utils.date import parse_date
 
 logg = logging.getLogger(__name__)
 
-ESCAPE_BIBTEX_KEY = False
-
-def normchar(char_descriptor):
-    return unicodedata.lookup(char_descriptor).lower()
-
-
-din5007_variant2_translation = [
-    [normchar('LATIN CAPITAL LETTER A WITH DIAERESIS'), 'ae'],  # Auml
-    [normchar('LATIN CAPITAL LETTER O WITH DIAERESIS'), 'oe'],  # Ouml
-    [normchar('LATIN CAPITAL LETTER U WITH DIAERESIS'), 'ue'],  # Uuml
-    [normchar('LATIN SMALL LETTER A WITH DIAERESIS'), 'ae'],  # auml
-    [normchar('LATIN SMALL LETTER O WITH DIAERESIS'), 'oe'],  # ouml
-    [normchar('LATIN SMALL LETTER U WITH DIAERESIS'), 'ue'],  # uuml
-    [normchar('LATIN SMALL LETTER SHARP S'), 'ss'],  # szlig
-    [normchar('LATIN SMALL LETTER E WITH GRAVE'), 'e'],  # egrave
-    [normchar('LATIN SMALL LETTER E WITH ACUTE'), 'e'],  # eacute
-]
-
-d_escape = dict(din5007_variant2_translation)
-
-
-def escape_bibtexkey(s, default_char="_"):
-    res = ""
-    for c in s:
-        if c in _string.ascii_letters + _string.digits + "-_+:":
-            res = res + c
-            continue
-        elif c in d_escape:
-            res = res + d_escape[c]
-        else:
-            res = res + default_char
-    return res
-
-
 token = re.compile(r'@\w+\s*{\s*|[a-zA-Z-_]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-9a-zA-Z_]')
 comment = re.compile(r'%[^\n]*\n')
 delim = re.compile(r'\W')

@@ -18,6 +18,8 @@ from __future__ import print_function
 
 import datetime as _datetime
 import json as _json
+import os as _os
+import os.path as _
 import re
 import sys
 import codecs
@@ -26,9 +28,13 @@ import unicodedata
 import string as _string
 import time
 
+import backports as _backports
+import backports.functools_lru_cache as _
 from bibtexparser import load as bibtex_load
 from bibtexparser.bparser import BibTexParser
 import bibtexparser.customization
+import ruamel as _ruamel
+import ruamel.yaml as _
 
 import core as _core
 import schema as _schema
@@ -67,54 +73,13 @@ def getNow():
     return now
 
 
-article_types = [
-    ("article", "An article from a journal or magazine.",
-     ("author", "title", "journal", "year"),
-     ("volume", "number", "pages", "month", "note", "key")),
-    ("misc", "Use this type when nothing else seems appropriate.",
-     (),
-     ("author", "title", "howpublished", "month", "year", "note", "key")),
-    ("unpublished", "A document with an author and title, but not formally published. ",
-     ("author", "title", "note"),
-     ("month", "year", "key")),
-    ("book", "A book with an explicit publisher. ",
-     ("author or editor", "title", "publisher", "year"),
-     ("volume", "series", "address", "edition", "month", "note", "key")),
-    ("booklet", "A work that is printed and bound, but without a named publisher or sponsoring institution.",
-     ("title",),
-     ("author", "howpublished", "address", "month", "year", "note", "key")),
-    ("inbook", "A part of a book, which may be a chapter and/or a range of pages. ",
-     ("author or editor", "title", "chapter and/or pages", "publisher", "year"),
-     ("volume", "series", "address", "edition", "month", "note", "key")),
-    ("manual", "Technical documentation. ",
-     ("title"),
-     ("author", "organization", "address", "edition", "month", "year", "note", "key")),
-    ("techreport", "A report published by a school or other institution, usually numbered within a series. ",
-     ("author", "title", "institution", "year"),
-     ("type", "number", "address", "month", "note", "key")),
-    ("conference",
-     "An article in the proceedings of a conference. This entry is identical to the 'inproceedings' entry and is included for compatibility with another text formatting system. ",
-     ("author", "title", "booktitle", "year"),
-     ("editor", "pages", "organization", "publisher", "address", "month", "note", "key")),
-    ("proceedings", " The proceedings of a conference.",
-     ("title", "year"),
-     ("editor", "publisher", "organization", "address", "month", "note", "key")),
-    ("inproceedings", "An article in the proceedings of a conference. ",
-     ("author", "title", "booktitle", "year"),
-     ("editor", "pages", "organization", "publisher", "address", "month", "note", "key")),
-    ("incollection", "A part of a book with its own title.",
-     ("author", "title", "booktitle", "year"),
-     ("editor", "pages", "organization", "publisher", "address", "month", "note", "key")),
-    ("phdthesis", "A PhD thesis.",
-     ("author", "title", "school", "year"),
-     ("address", "month", "note", "key")),
-    ("mastersthesis", "A Master's thesis.",
-     ("author", "title", "school", "year"),
-     ("address", "month", "note", "key"))]
-
-
-def getAllBibTeXTypes():
-    return [bibname for bibname, description, required, optional in article_types]
+@_backports.functools_lru_cache.lru_cache()
+def get_document_type_fields():
+    with open(_os.path.normpath(_os.path.join(__file__, "..", "bibtex-article-types.yaml")), "rb") as f:
+        document_types = _ruamel.yaml.YAML(typ="safe", pure=True).load(f)
+    for fields in document_types.itervalues():
+        assert not frozenset(fields["required"]).intersection(fields["optional"])
+    return document_types
 
 
 def getbibtexmappings():
@@ -136,15 +101,15 @@ def getbibtexmappings():
 
 def _detecttype(doctype, fields):
     results = []
-    for bibname, description, required, optional in article_types:
+    for bibname, fields in get_document_type_fields().iteritems():
         score = 0
         if doctype.lower() == bibname.lower():
             score += 120
-        score -= len(required)
-        for field in required:
+        score -= len(fields["required"])
+        for field in fields["required"]:
             if field in fields:
                 score += 20
-        for field in optional:
+        for field in fields["optional"]:
             if field in fields:
                 score += 10
         results += [(score, bibname)]

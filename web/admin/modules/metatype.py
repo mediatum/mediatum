@@ -33,7 +33,7 @@ from schema.schema import getMetaType
 from schema.schema import importMetaSchema
 from schema.schema import updateMetaField
 from schema.schema import updateMetaType
-from schema.bibtex import getAllBibTeXTypes
+from schema.bibtex import get_document_type_fields
 from schema import citeproc
 
 # metafield methods
@@ -464,7 +464,7 @@ def MetatypeDetail(req, id, err=0):
         v["datatypes"].sort(key=_operator.attrgetter("__name__"))
     v["metadatatype"] = metadatatype
     v["error"] = err
-    v["bibtextypes"] = getAllBibTeXTypes()
+    v["bibtextypes"] = sorted(get_document_type_fields())
     v["bibtexselected"] = metadatatype.get("bibtexmapping").split(";")
     v["citeproctypes"] = citeproc.get_csl_types()
     v["citeprocselected"] = metadatatype.get("citeprocmapping").split(";")

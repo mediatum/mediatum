@@ -150,8 +150,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
 
 
                     callback: function(action, opts) {
-                        var res = false;  // return_value
-
                         var s = "create_container_";
                         if (action.substring(0, s.length) === s) {
                             var container_type = action.substring(s.length, action.length);
@@ -161,7 +159,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                         switch( action ) {
                             case "edit":
                                 loadEditArea(node.key, "metadata");
-                                res = false;
                                 break;
                             case "create_container":
                                 node.load(true);
@@ -171,8 +168,6 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                 node.tree.loadKeyPath(currentpath, _tree_node_show_state);
 
                                 if (currentpath)  loadEditArea(new_path_endpoint, "metadata");
-
-                                res = false;
                                 break;
                             case "cut_container":
                                 node_to_paste = node;
@@ -185,36 +180,29 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                                 // give tree keyboard focus so that cut mode may be canceled by "ESC" key
                                 current_tree.widget.options.keyboard = FANCYTREE_KEYBOARD;
                                 $(last_activated_tree_id_sel + ' .fancytree-container').focus();
-
-                                res = false;
                                 break;
                             case "paste_container_here":
                                 if (_paste_container_here(node_to_paste, node.key))  {
                                     gethometree().reload();
                                     getcoltree().reload();
                                 }
-                                res = false;
                                 break;
                             case "delete":
                                 currentid = node.key;
                                 questionOperation('delete'); // removes active node
-                                res = false;
                                 break;
                             case "clear_trash":
                                 currentid = node.key;
                                 questionOperation("clear_trash"); // removes active node
                                 node.setActive();
-                                res = false;
                                 break;
                             case "quit":
-                                res = false;
                                 break;
                             default:
                                 console.debug("Todo: appply action '" + action + "' to node " + node + '-' + node.title + '-' + node.key);
-                                res = false;
                             }
                         current_tree.widget.options.keyboard = FANCYTREE_KEYBOARD;
-                        return res;
+                        return false;
                     }  // callback
 
                 };  // return

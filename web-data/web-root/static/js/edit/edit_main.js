@@ -28,9 +28,7 @@ var FANCYTREE_DEFAULT_ICON = '/static/img/webtree/directory.svg';
 
 function build_context_menu_items(node) {
     // no contextMenu for disabled nodes or descendants of cut node
-    if ( node.li && node.li.classList.contains('fancytree-node-disabled') || (flag_cut_mode && node.isDescendantOf(node_to_paste)) ) {
-        return false;
-    }
+    if ( node.li && node.li.classList.contains('fancytree-node-disabled') || (flag_cut_mode && node.isDescendantOf(node_to_paste)) )  return false;
 
     var create_container_items = {};
 
@@ -90,9 +88,7 @@ function _paste_container_here(container, targetId)  {
         node_to_paste_li.removeClass('fancytree-node-disabled');
         return false;
     }
-    if (!($.isNumeric(src) && $.isNumeric(obj) && $.isNumeric(targetId)))  {
-        throw "moving node failed: node id is not an integer";
-    }
+    if (!($.isNumeric(src) && $.isNumeric(obj) && $.isNumeric(targetId)))  throw "moving node failed: node id is not an integer";
     edit_action_sync('move', src, obj, targetId);
     flag_cut_mode = false;
     new_path_endpoint = obj;
@@ -102,11 +98,8 @@ function _paste_container_here(container, targetId)  {
 
 
 function _tree_node_show_state(node, state)  {
-    if (state==="loaded")  {
-      node.setExpanded(true);
-    }  else  if (state=="ok")  {
-      node.setActive(true);
-    }
+    if (state==="loaded")  node.setExpanded(true);
+    if (state=="ok")  node.setActive(true);
 }
 
 
@@ -125,7 +118,10 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                 var node = curtree.getNodeByKey(curkey);
 
                 // show contextMenu only for the active node
-                if (!node.isActive()) {curtree.widget.options.keyboard = FANCYTREE_KEYBOARD; return false;};
+                if (!node.isActive()) {
+                  curtree.widget.options.keyboard = FANCYTREE_KEYBOARD;
+                  return false;
+                };
 
                 curtree.widget.options.keyboard = false;
 
@@ -270,9 +266,7 @@ function removeByKey(dtree, ckey) {
         try {
             cnode.li.hidden  = true;
             cnode.remove();
-            if (pnode.isExpanded() != pnode_was_expanded) {
-                pnode.toggleExpand();
-            }
+            if (pnode.isExpanded() != pnode_was_expanded)  pnode.toggleExpand();
         }  catch  {}
     }
 }
@@ -282,9 +276,7 @@ function removeByKey(dtree, ckey) {
 function isElementInViewport(el) {
 
     //special bonus for those using jQuery
-    if (el instanceof jQuery) {
-        el = el[0];
-    }
+    if (el instanceof jQuery)  el = el[0];
 
     var rect = el.getBoundingClientRect();
 
@@ -309,16 +301,12 @@ function reloadPage(id, path, tree_selector){
     $('.mediatum_accordiontree').accordion("option", "active", active_accordion);
     $(tree_selector).fancytree("getTree").loadKeyPath(path, function (node, state) {
         _tree_node_show_state(node, state);
-        if ((state==="ok") && (!isElementInViewport(node.span))) {
-            node.span.scrollIntoView();
-        }
+        if ((state==="ok") && (!isElementInViewport(node.span)))  node.span.scrollIntoView();
     });
     try {
         var usedtree = $(tree_selector).fancytree("getTree");
         var an = usedtree.activeNode;
-        if (!isElementInViewport(an.span)) { // not needed for fancytree
-            an.span.scrollIntoView();
-        }
+        if (!isElementInViewport(an.span))  an.span.scrollIntoView();  // not needed for fancytree
         an.load(forceReload=true);  // fancytree
         an.toggleExpanded();
         an.toggleExpanded();
@@ -497,7 +485,7 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
 
         createNode: function(event, data){
             var iconpath = data.node.data.icon;
-            if (iconpath == "") {data.node.data.icon = FANCYTREE_DEFAULT_ICON;}
+            if (iconpath == "")  data.node.data.icon = FANCYTREE_DEFAULT_ICON;
         },
 
         source: {
@@ -509,9 +497,7 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
 
         loadChildren: function(event, data) {
             data.node.visit(function(subNode){
-                if( subNode.isUndefined() && subNode.isExpanded() ) {
-                    subNode.load();
-                }
+                if (subNode.isUndefined() && subNode.isExpanded())  subNode.load();
             });
         },
 
@@ -618,9 +604,7 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
             else if (data.targetType == 'title' || data.targetType == 'icon') {
                 var url = '&action='+encodeURIComponent(action);
 
-                if (action=="move" || action=="copy"){
-                    url = '&action='+encodeURIComponent(action)+'&dest='+node.key;
-                }
+                if (action=="move" || action=="copy")  url = '&action='+encodeURIComponent(action)+'&dest='+node.key;
 
                 var ajax_response;
 
@@ -682,9 +666,7 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
             contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix,
             data.node.key);  // tree-dependent
             $(node.span).removeClass('disabled');
-            if( $(".contextMenu:visible").length > 0 ){
-                $(".contextMenu").hide();
-            }
+            if ($(".contextMenu:visible").length > 0)  $(".contextMenu").hide();
 
             last_activated_node = node;
 
@@ -714,9 +696,7 @@ function get_tree_opts(tree_selector, tree_node_id_prefix, tree_root_key, tree_r
 
         postProcess: function(event, data) {  // check this
             data.tree.rootNode.setTitle(tree_root_nid);
-            if (currentpath!="/")  {
-                $(tree_selector).fancytree("getTree").loadKeyPath(currentpath, _tree_node_show_state);
-            }
+            if (currentpath!="/")  $(tree_selector).fancytree("getTree").loadKeyPath(currentpath, _tree_node_show_state);
         }  // postProcess:
 
     }; // tree_opts

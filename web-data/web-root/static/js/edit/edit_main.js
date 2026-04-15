@@ -96,7 +96,7 @@ function _paste_container_here(container, targetId)  {
     edit_action_sync('move', src, obj, targetId);
     flag_cut_mode = false;
     new_path_endpoint = obj;
-    if (currentpath)  $('.ui-layout-center').attr('src',`/edit/edit_content?srcnodeid=${obj}&id=${obj}&tab=content`);
+    if (currentpath)  loadEditArea(obj, "content");
     return true;
 }
 
@@ -160,7 +160,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
                         hideContextMenuForNode(node); // hide the contextMenu
                         switch( action ) {
                             case "edit":
-                                $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+node.key+'&id='+node.key+'&tab=metadata');
+                                loadEditArea(node.key, "metadata");
                                 res = false;
                                 break;
                             case "create_container":
@@ -170,10 +170,7 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curkey) 
 
                                 node.tree.loadKeyPath(currentpath, _tree_node_show_state);
 
-                                if (currentpath) {
-                                    $('.ui-layout-center').attr('src',
-                                    '/edit/edit_content?srcnodeid='+new_path_endpoint+'&id='+new_path_endpoint+'&tab=metadata');
-                                }
+                                if (currentpath)  loadEditArea(new_path_endpoint, "metadata");
 
                                 res = false;
                                 break;
@@ -247,10 +244,7 @@ function contextmenu_collections(selector) {
 
                 return {
                     callback: function(key, options) {
-                        if (key == "edit") {
-                            $('.ui-layout-center').attr('src',
-                            '/edit/edit_content?srcnodeid='+collectionsid+'&id='+collectionsid+'&tab=metadata');
-                        }
+                        if (key == "edit")  loadEditArea(collectionsid, "metadata");
 
                         if (key == "create_container_collection") {
                             _add_new_container("collection");
@@ -323,7 +317,7 @@ function reloadPage(id, path, tree_selector){
     }
     action = "";
     idselection = id;
-    $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+id+'&id='+id);
+    loadEditArea(id);
     $('.mediatum_accordiontree').accordion("option", "active", active_accordion);
     $(tree_selector).fancytree("getTree").loadKeyPath(path, function (node, state) {
         _tree_node_show_state(node, state);
@@ -451,8 +445,10 @@ function cancelOperation(){
 }
 
 
-function loadEditArea(id){
-    $('.ui-layout-center').attr('src', '/edit/edit_content?srcnodeid='+ id + '&id=' + id);
+function loadEditArea(id, tab)  {
+    url = `/edit/edit_content?srcnodeid=${id}&id=${id}`;
+    if (tab)  url += `&tab=${tab}`;
+    $('.ui-layout-center').attr('src', url);
 }
 
 

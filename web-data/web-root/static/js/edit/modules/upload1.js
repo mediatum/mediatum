@@ -3,25 +3,25 @@
   SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-function openMetaForm(id){
-    var ajax_response;
-    var options = {
-        url: `/edit/edit_content?action=addmeta&id=${id}`,
+function _ajax_json_action(id, action, on_success)  {
+    return $.ajax({
+        url: `/edit/edit_content?action=${action}&id=${id}`,
         async: false,
         dataType: 'json',
-        success: function(data){
-            ajax_response = data;
-            $('#metaformcontent').html(data.content);
-            $('<input>').attr({
-                type: 'hidden',
-                name: 'srcnodeid',
-                value: id,
-            }).appendTo($('#metaformcontent'));
-            $('#metaform').show();
-        }
-    };
+        success: on_success,
+    });
+}
 
-    $.ajax(options);
+function openMetaForm(id){
+    _ajax_json_action(id, "addmeta", function(data) {
+        $('#metaformcontent').html(data.content);
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'srcnodeid',
+            value: id,
+        }).appendTo($('#metaformcontent'));
+        $('#metaform').show();
+    });
     parent.$('#overlay').css('display', 'block');
 }
 
@@ -30,18 +30,10 @@ function closeMetaForm(){ // close upload form
 }
 
 function openDoiForm(id){
-    var ajax_response;
-    var options = {
-        url: `/edit/edit_content?action=adddoi&id=${id}`,
-        async: false,
-        dataType: 'json',
-        success: function(data){
-            ajax_response = data;
-            $('#metaformcontent').html(data.content);
-            $('#metaform').show();
-        }
-    };
-    $.ajax(options);
+    _ajax_json_action(id, "adddoi", function (data) {
+        $('#metaformcontent').html(data.content);
+        $('#metaform').show();
+    });
 }
 
 var number_files = 0;
@@ -49,15 +41,7 @@ var all_files = 0;
 var err_files = 0;
 
 function openUploadFormPluploadWidgetFile(id){ // show upload form
-    var ajax_response;
-    var options = {
-        url: `/edit/edit_content?action=removefiles&id=${id}`,
-        async: false,
-        dataType: 'json',
-        success: function(data) { ajax_response = data; }
-    };
-
-    $.ajax(options);
+    _ajax_json_action(id, "removefiles", function () {});
 
     init_plupload_widget_file(id);
 
@@ -286,16 +270,7 @@ function init_plupload_widget_file(id) {
 }
 
 function openUploadFormPluploadWidgetBib(id){ // show upload form
-    var ajax_response;
-
-    var options = {
-        url: `/edit/edit_content?action=removefiles&id=${id}`,
-        async: false,
-        dataType: 'json',
-        success: function(data) { ajax_response = data; }
-    };
-
-    $.ajax(options);
+    _ajax_json_action(id, "removefiles", function () {});
 
     uploaderbib = init_plupload_widget_bib(id);
 

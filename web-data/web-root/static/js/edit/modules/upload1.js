@@ -12,6 +12,132 @@ function _ajax_json_action(id, action, on_success)  {
     });
 }
 
+function _open_upload_form_plupload_widget(
+    id,
+    uploadform_htmlid,
+    filelist_htmlid,
+    dropbox_htmlid,
+    plupload_htmlid,
+    uploader_container_htmlid,
+    create_objects_button_htmlid,
+    get_files_uploaded_counter,
+    set_files_uploaded_counter,
+    mime_types,
+)  {
+    _ajax_json_action(id, "removefiles", function () {});
+
+    // initialize widget
+    csrf = csrf.replace("##", "!!!!!");
+    $(function () { $(`#${plupload_htmlid}`).plupload({
+        runtimes: 'html5',
+        autostart: false,
+        url: `/edit/edit_content?action=upload&uploader=plupload&id=${id}`,
+        // User can upload no more then 20 files in one go (sets multiple_queues to false)
+        max_file_count: 0,  // default is 0 -> no limit
+        filters: { mime_types: mime_types },
+        rename: true,  // rename files by clicking on their titles
+        sortable: false,  // sort files
+        dragdrop: true,  // permit to drag'n'drop files onto the widget (currently only HTML5 supports that)
+        views: {  // views to activate
+            list: true,
+            thumbs: false,
+            active: 'list',
+            remember: false,
+        },
+        buttons: {  // buttons to activate
+            browse: true,
+            start: true,
+            stop: true,
+        },
+        preinit : {  // PreInit events, bound before any internal events
+            UploadFile: function(up, file) {
+                up.setOption('multipart_params', {csrf_token : csrf});
+            },
+        },
+        init: {
+            PostInit: function (up)  {  // initialization finished, event handlers set up
+                set_files_uploaded_counter(0);
+            },
+            BeforeUpload: function(up, file) {
+                var iframe_c = $("iframe.ui-layout-center");
+                var fid = file.id;
+                var filelist_line = $("#"+fid);
+                var c1 = filelist_line.children()[1];
+                // sending additional parameters
+                this.settings.multipart_params = {
+                    "file_name" : file.name,
+                    "data_extra" : $('#select_extra_' + fid).val()
+                };
+            },
+            FilesAdded: function(up, files) {
+                plupload.each(files, function(file) {
+                    var iframe_c = $("iframe.ui-layout-center");
+                    var fid = file.id;
+                    var filelist_line = $("#"+fid);
+                    filelist_line.attr('class', 'progressContainer green');
+                    var c1 = filelist_line.children()[1];
+                    filename = file.name;
+                    file_ext = filename.split('.').pop().toLowerCase();
+                    var sel = '';
+                    if (file_ext == 'bib') {
+                        var sel = " <select name='tofiletype' class='select_unpack' id='select_extra_" + fid + "'>" +
+                            "<option value='tofile'>" + js_upload_no_unpack + "</option>" +
+                            "<option value='totype' selected>" + js_upload_unpack + "</option>" +
+                        "</select>";
+                    }
+                    c1.innerHTML = c1.innerHTML + sel;
+                    c1ppp = c1.parentNode.parentNode.parentNode;
+                    c1ppp.style.position = 'relative';
+                    c1ppp.style.top = '0px';
+                    c1ppp.style.overflow = 'auto';
+                });
+            },
+            FileUploaded: function(up, file, info) {
+                var iframe_c = $("iframe.ui-layout-center");
+                var fid = file.id;
+                var filelist_line = $("#"+fid);
+                if (JSON.parse(info.response).ret.indexOf('schema error') >= 0)  {
+                    filelist_line.attr('class', 'progressContainer red');
+                } else {
+                    filelist_line.attr('class', 'progressContainer blue');
+                }
+                var c1 = filelist_line.children()[1];
+                c1.innerHTML = c1.innerHTML + JSON.parse(info.response).ret;
+                c1ppp = c1.parentNode.parentNode.parentNode;
+                c1ppp.style.position = 'relative';
+                c1ppp.style.top = '0px';
+                c1ppp.style.overflow = 'auto';
+                $('#select_extra_' + fid).hide();
+                htree = parent.gethometree();
+                JSON.parse(info.response).new_tree_labels.forEach(
+                    function(nentry) {
+                    changed_node = htree.getNodeByKey(nentry.id);
+                    changed_node.data.title = nentry.label;
+                    changed_node.render();
+                    }
+                );
+                uc = $(`#${uploader_container_htmlid}`).find('.ui-resizable-handle').remove();
+                set_files_uploaded_counter(1+get_files_uploaded_counter());
+            },
+            UploadComplete: function(up, files) {
+                if (get_files_uploaded_counter() > 0) {
+                    $(`#${create_objects_button_htmlid}`).prop('disabled', false);
+                }
+            },
+        },
+    })});
+
+    uf = $(`#${uploadform_htmlid}`)
+    uf.show();
+    hc = $('div.plupload_header');
+    ufs = $(`#${filelist_htmlid}`);
+    var x = $(`#${dropbox_htmlid}`);
+    var uc = $('#uploader_container');
+    hc.remove();
+    parent.$('#overlay').css('display', 'block');
+}
+
+
 function openMetaForm(id){
     _ajax_json_action(id, "addmeta", function(data) {
         $('#metaformcontent').html(data.content);
@@ -41,19 +167,24 @@ var all_files = 0;
 var err_files = 0;
 
 function openUploadFormPluploadWidgetFile(id){ // show upload form
-    _ajax_json_action(id, "removefiles", function () {});
-
-    init_plupload_widget_file(id);
-
-    uf = $('#mediatum_uploadform_plupload_widget_file');
-    uf.show();
-
-    hc = $('div.plupload_header');
-    ufs = $('#uploaderfile_filelist');
-    var x = $('#uploaderfile_dropbox');
-    var uc = $('#uploader_container');
-    hc.remove();
-    parent.$('#overlay').css('display', 'block');
+    _open_upload_form_plupload_widget(
+        id,
+        "mediatum_uploadform_plupload_widget_file",
+        "uploaderfile_filelist",
+        "uploaderfile_dropbox",
+        "uploaderfile",
+        "mediatum_uploader_container",
+        "id_button_createobjectsplupload_file",
+        function () {  return files_uploaded;  },
+        function (value) {  files_uploaded = value;  },
+        [
+            {title : "Image files", extensions : "jpg,jpeg,gif,png,tif,tiff,svg,bmp"},
+            {title : "Zip files", extensions : "zip"},
+            {title : "pdf files", extensions : "pdf"},
+            {title : "mp4 video files", extensions : "mp4"},
+            {title : "mp3 files", extensions : "mp3"},
+        ],
+    );
 }
 
 function closeFormPluploadWidgetFile(id) { // close upload form
@@ -138,151 +269,20 @@ function createObjectsPluploadFile(id){ // build object out of files
 
 var files_uploaded_file = 0;
 
-function init_plupload_widget_file(id) {
-    csrf = csrf.replace("##", "!!!!!");
-    var u = $(function() {
-        $("#uploaderfile").plupload({
-        // General settings
-        runtimes : 'html5',
-        autostart: false,
-        url: `/edit/edit_content?action=upload&uploader=plupload&id=${id}`,
-        // User can upload no more then 20 files in one go (sets multiple_queues to false)
-        max_file_count: 0,  // default is 0 -> no limit
-        filters : {
-            // Specify what files to browse for
-            mime_types: [
-            {title : "Image files", extensions : "jpg,jpeg,gif,png,tif,tiff,svg,bmp"},
-            {title : "Zip files", extensions : "zip"},
-            {title : "pdf files", extensions : "pdf"},
-            {title : "mp4 video files", extensions : "mp4"},
-            {title : "mp3 files", extensions : "mp3"},
-            ]
-        },
-        // Rename files by clicking on their titles
-        rename: true,
-        // Sort files
-        sortable: false,
-        // Enable ability to drag'n'drop files onto the widget (currently only HTML5 supports that)
-        dragdrop: true,
-        // Views to activate
-        views: {
-            list: true,
-            thumbs: false, // deactivate thumbs view
-            active: 'list',
-            remember: false,
-        },
-        // buttons to activate
-        buttons: {
-            browse: true,
-            start: true,
-            stop: true
-        },
-        // PreInit events, bound before any internal events
-        preinit : {
-            UploadFile: function(up, file) {
-                // You can override settings before the file is uploaded
-                up.setOption('multipart_params', {csrf_token : csrf});
-            }
-        },
-        // Post init events, bound after the internal events
-        init : {
-            PostInit: function(up) {
-                // Called after initialization is finished and internal event handlers bound
-                files_uploaded = 0;
-            },
-            BeforeUpload: function(up, file) {
-                // Called right before the upload for a given file starts, can be used to cancel it if required
-                var iframe_c = $("iframe.ui-layout-center");
-                var fid = file.id;
-                var filelist_line = $("#"+fid);
-                var c1 = filelist_line.children()[1];
-                // sending additional parameters
-                this.settings.multipart_params = {
-                    "file_name" : file.name,
-                    "data_extra" : $('#select_extra_' + fid).val()
-                };
-            },
-            FilesAdded: function(up, files) {
-                // Called when files are added to queue
-                plupload.each(files, function(file) {
-                    var iframe_c = $("iframe.ui-layout-center");
-                    var fid = file.id;
-                    var filelist_line = $("#"+fid);
-
-                    filelist_line.attr('class', 'progressContainer green');
-                    var c1 = filelist_line.children()[1];
-                    filename = file.name;
-                    file_ext = filename.split('.').pop().toLowerCase();
-                    var sel = '';
-                    if (file_ext == 'bib') {
-                        var sel = " <select name='tofiletype' class='select_unpack' id='select_extra_" + fid + "'>" +
-                            "<option value='tofile'>" + js_upload_no_unpack + "</option>" +
-                            "<option value='totype' selected>" + js_upload_unpack + "</option>" +
-                        "</select>";
-                    }
-
-                    c1.innerHTML = c1.innerHTML + sel;
-                    c1ppp = c1.parentNode.parentNode.parentNode;
-                    c1ppp.style.position = 'relative';
-                    c1ppp.style.top = '0px';
-                    c1ppp.style.overflow = 'auto';
-                });
-            },
-            FileUploaded: function(up, file, info) {
-                // Called when file has finished uploading
-                var iframe_c = $("iframe.ui-layout-center");
-                var fid = file.id;
-                var filelist_line = $("#"+fid);
-                filelist_line.attr('class', 'progressContainer blue');
-                var c1 = filelist_line.children()[1];
-                c1.innerHTML = c1.innerHTML + JSON.parse(info.response).ret;
-                c1ppp = c1.parentNode.parentNode.parentNode;
-                c1ppp.style.position = 'relative';
-                c1ppp.style.top = '0px';
-                c1ppp.style.overflow = 'auto';
-                $('#select_extra_' + fid).hide();
-
-                htree = parent.gethometree();
-                JSON.parse(info.response).new_tree_labels.forEach(
-                    function(nentry) {
-                    changed_node = htree.getNodeByKey(nentry.id);
-                    changed_node.data.title = nentry.label;
-                    changed_node.render();
-                    }
-                );
-
-                uc = $('#mediatum_uploader_container');
-                x = uc.find('.ui-resizable-handle');
-                x.remove();
-
-                files_uploaded_file = files_uploaded_file + 1;
-            },
-            UploadComplete: function(up, files) {
-                // Called when all files are either uploaded or failed
-                if (files_uploaded_file > 0) {
-                    $('#id_button_createobjectsplupload_file').prop('disabled', false);
-                }
-            },
-        }
-    });
-    });
-    return u;
-}
 
 function openUploadFormPluploadWidgetBib(id){ // show upload form
-    _ajax_json_action(id, "removefiles", function () {});
-
-    uploaderbib = init_plupload_widget_bib(id);
-
-    uf = $('#mediatum_uploadform_plupload_widget_bib');
-    uf.show();
-
-    hc = $('div.plupload_header');
-    ufs = $('#uploaderbib_filelist');
-    var x = $('#uploaderbib_dropbox');
-    var uc = $('#uploader_container');
-    hc.remove();
-    parent.$('#overlay').css('display', 'block');
+    _open_upload_form_plupload_widget(
+        id,
+        "mediatum_uploadform_plupload_widget_bib",
+        "uploaderbib_filelist",
+        "uploaderbib_dropbox",
+        "uploaderbib",
+        "uploaderbib_container",
+        "id_button_createobjectsplupload_bib",
+        function () {  return files_uploaded_bib;  },
+        function (value) {  files_uploaded_bib = value;  },
+        [ {title : "bibtex files", extensions : "bib"} ],
+    );
 }
 
 function closeFormPluploadWidgetBib(id) { // close upload form
@@ -340,136 +340,6 @@ function createObjectsPluploadBib(id){ // build object out of files
 }  // function createObjectsPluploadBib
 
 var files_uploaded_bib = 0;
-
-function init_plupload_widget_bib(id) {
-    csrf = csrf.replace("##", "!!!!!");
-    var u = $(function() {
-        $("#uploaderbib").plupload({
-            // General settings
-            runtimes : 'html5',
-            autostart: false,
-            url: `/edit/edit_content?action=upload&uploader=plupload&id=${id}`,
-            // User can upload no more then 20 files in one go (sets multiple_queues to false)
-            max_file_count: 0,  // default is 0 -> no limit
-            filters : {
-                // Specify what files to browse for
-                mime_types: [
-                {title : "bibtex files", extensions : "bib"}
-                ]
-            },
-            // Rename files by clicking on their titles
-            rename: true,
-            // Sort files
-            sortable: false,
-            // Enable ability to drag'n'drop files onto the widget (currently only HTML5 supports that)
-            dragdrop: true,
-            // Views to activate
-            views: {
-                list: true,
-                thumbs: false, // deactivate thumbs view
-                active: 'list',
-                remember: false,
-            },
-            // buttons to activate
-            buttons: {
-                browse: true,
-                start: true,
-                stop: true
-            },
-            // PreInit events, bound before any internal events
-            preinit : {
-                UploadFile: function(up, file) {
-                    // You can override settings before the file is uploaded
-                    up.setOption('multipart_params', {csrf_token : csrf});
-                }
-            },
-            // Post init events, bound after the internal events
-            init : {
-                PostInit: function(up) {
-                    // Called after initialization is finished and internal event handlers bound
-                    files_uploaded_bib = 0;
-                },
-                BeforeUpload: function(up, file) {
-                    // Called right before the upload for a given file starts, can be used to cancel it if required
-                    var iframe_c = $("iframe.ui-layout-center");
-                    var fid = file.id;
-                    var filelist_line = $("#"+fid);
-                    var c1 = filelist_line.children()[1];
-
-                    // sending additional parameters
-                    this.settings.multipart_params = {
-                        "file_name" : file.name,
-                        "data_extra" : $('#select_extra_' + fid).val()
-                    };
-                },
-                FilesAdded: function(up, files) {
-                    // Called when files are added to queue
-                    plupload.each(files, function(file) {
-                        var iframe_c = $("iframe.ui-layout-center");
-                        var fid = file.id;
-                        var filelist_line = $("#"+fid);
-
-                        filelist_line.attr('class', 'progressContainer green');
-                        var c1 = filelist_line.children()[1];
-                        filename = file.name;
-                        file_ext = filename.split('.').pop().toLowerCase();
-                        var sel = '';
-                        if (file_ext == 'bib') {
-                            var sel = " <select name='tofiletype' class='select_unpack' id='select_extra_" + fid + "'>" +
-                                "<option value='tofile'>" + js_upload_no_unpack + "</option>" +
-                                "<option value='totype' selected>" + js_upload_unpack + "</option>" +
-                            "</select>";
-                        }
-                        c1.innerHTML = c1.innerHTML + sel;
-                        c1ppp = c1.parentNode.parentNode.parentNode;
-                        c1ppp.style.position = 'relative';
-                        c1ppp.style.top = '0px';
-                        c1ppp.style.overflow = 'auto';
-                    });
-                },
-                FileUploaded: function(up, file, info) {
-                    // Called when file has finished uploading
-                    var iframe_c = $("iframe.ui-layout-center");
-                    var fid = file.id;
-                    var filelist_line = $("#"+fid);
-                    if (JSON.parse(info.response).ret.indexOf('schema error') >= 0)
-                      filelist_line.attr('class', 'progressContainer red');
-                    else
-                      filelist_line.attr('class', 'progressContainer blue');
-                    var c1 = filelist_line.children()[1];
-                    c1.innerHTML = c1.innerHTML + JSON.parse(info.response).ret;
-                    c1ppp = c1.parentNode.parentNode.parentNode;
-                    c1ppp.style.position = 'relative';
-                    c1ppp.style.top = '0px';
-                    c1ppp.style.overflow = 'auto';
-                    $('#select_extra_' + fid).hide();
-
-                    htree = parent.gethometree();
-                    JSON.parse(info.response).new_tree_labels.forEach(
-                        function(nentry) {
-                        changed_node = htree.getNodeByKey(nentry.id);
-                        changed_node.data.title = nentry.label;
-                        changed_node.render();
-                        }
-                    );
-
-                    uc = $('#uploaderbib_container');
-                    x = uc.find('.ui-resizable-handle');
-                    x.remove();
-
-                    files_uploaded_bib = files_uploaded_bib + 1;
-                },
-                UploadComplete: function(up, files) {
-                    // Called when all files are either uploaded or failed
-                    if (files_uploaded_bib > 0) {
-                        $('#id_button_createobjectsplupload_bib').prop('disabled', false);
-                    }
-                },
-            }
-        });
-    });
-    return u;
-}
 
 
 // Handle the case when form was submitted before uploading has finished

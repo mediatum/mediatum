@@ -22,15 +22,7 @@ var load_script = function(options) {
     var script_tag = options.owner_document.createElement('script');
     script_tag.setAttribute('src', options.src);
     script_tag.onload = function() {
-        script_tag.onreadystatechange = null;
         options.callback && options.callback(options.position);
-    };
-
-    script_tag.onreadystatechange = function() {
-        if (script_tag.readyState == 'loaded' || script_tag.readyState == 'complete') {
-            script_tag.onload = null;
-            options.callback && options.callback(options.position);
-        }
     };
     options.owner_document.getElementsByTagName('head')[0].appendChild(script_tag);
 };

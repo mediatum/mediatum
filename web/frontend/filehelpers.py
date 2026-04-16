@@ -80,6 +80,8 @@ def get_node_or_version(nid, version_id=None, nodeclass=Node):
             version = node.get_published_version()
         else:
             version = node.get_tagged_version(unicode(version_id))
+        if not version:
+            _flask.abort(404, "version does not exist")
 
     return version if version is not None else node
 

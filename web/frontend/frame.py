@@ -8,6 +8,7 @@ import logging
 import collections as _collections
 from collections import OrderedDict
 
+import flask as _flask
 import sqlalchemy as _sqlalchemy
 import sqlalchemy.orm as _orm
 from markupsafe import Markup
@@ -86,7 +87,8 @@ class Searchlet(object):
         searchmode_from_req = req.args.get("searchmode")
         if searchmode_from_req in ("extended", "extendedsuper"):
             if self.searchmask is None:
-                raise ValueError("no searchmask defined, extended search cannot be run for container {}".format(self.container.id))
+                # no searchmask defined
+                _flask.abort(404, "this node does not support extended search")
             self.searchmode = searchmode_from_req
 
         if self.searchmode == "extended":

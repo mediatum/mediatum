@@ -10,6 +10,7 @@ import httplib as _httplib
 import logging
 import os
 
+import flask as _flask
 from sqlalchemy_continuum.utils import version_class
 from urllib import quote
 
@@ -218,7 +219,8 @@ def send_file(req):
             req.response.headers["Content-Disposition"] = u'attachment; filename="{}"'.format(display_file_name)
         return _request_handler.sendFile(req, filepath, mimetype)
 
-    assert filename is not None
+    if filename is None:
+        _flask.abort(400, "filename missing")
 
     # try full filename
     for f in node.files:

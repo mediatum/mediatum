@@ -20,7 +20,6 @@ var load_script = function(options) {
     options.owner_document = options.owner_document || document;
 
     var script_tag = options.owner_document.createElement('script');
-    script_tag.setAttribute('type', 'text/javascript');
     script_tag.setAttribute('src', options.src);
     script_tag.onload = function() {
         script_tag.onreadystatechange = null;

@@ -98,7 +98,6 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
             url += limit ? "&limit="+limit : "";
             url += format ? "&format="+format : "";
             url += language ? "&lang="+language : "";
-            //url += "&acceptcached=180&mask=default&type=.*(document|diss|image|video).*";
             url += "&acceptcached=180&mask="+output;
             url += (mediatum_config['fields'+pos] || mediatum_config['fields'+detailof]) ? "&attrspec=all" : "";
             if ((mediatum_config['style'] ? mediatum_config['style']:1)==1 && styledone==0){
@@ -198,14 +197,13 @@ function startsearch(pos, baseid, language){
             s += '<a href="'+baseurl+'/?id='+item[0].id+'"'+target+' id="item_link"><div id="item">'
             $.each(fields, function(index, value){
             d = 0;
-                try{
+                try {
                     d = formatData(value, item, i, data.nodelist.length);
                     s += d;
                     if (fields[fields.length-1]!=value && d.length>0){
                         s += divider;
                     }
-                 }catch(e){
-                    // do nothing
+                } catch (e) {
                 }
             });
             s += '</div></a>';
@@ -250,7 +248,6 @@ function formatData(value, item, i, l){
     while(result = re.exec(value)!=null){ // replace all attributes
         val = re.exec(value);
         attrname = val[0].replace(/(\[att:)|(\])/g, '');
-        //attrname = attrname.replace(/(\|.*)/g, '');
 
         if(attrname.match(/(\|.*)/g)){
             func = attrname.replace(/(.*)\|/, '');
@@ -265,8 +262,6 @@ function formatData(value, item, i, l){
         }
         else if(item[0]['attributes'][attrname] && item[0]['attributes'][attrname]!=""){ // test attributes
             value = value.replace(val, execFuncts(item[0]['attributes'][attrname], func));
-            //value = value.replace(val, item[0]['attributes'][attrname]);
-
         }else{ // attribute not found
             value = "";
         }
@@ -308,13 +303,6 @@ function execFuncts(value, func){
         }
     }
 
-    /*if ((new RegExp(/(replace:)/g)).exec(func)){ // replace -> syntax: |replace:pattern,replace
-        //format = func.replace(/(replace:)/, "").split("|")[0].split(",");
-        format = func.replace(/(replace:)/, "").split("|")[0].split(/([^\,]*),(.*)/g);
-        if (format.length==4){
-            return value.replace(new RegExp(format[1],"g"), format[2]);
-        }
-    }*/
     if ((new RegExp(/(replace:)/g)).exec(func)){ // replace -> syntax: |replace:pattern,replace
         format = func.replace(/(replace:)/, "").split("|")[0];
         var a = format.split(/([^\,]*),(.*)/g);

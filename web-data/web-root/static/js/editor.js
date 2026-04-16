@@ -235,14 +235,14 @@ function getEditPage(destname, nodeid, tab, action){
 
 
 function edit_action(action, src, ids, add){
-    var url = '&action='+escape(action);
+    var url = `&action=${encodeURIComponent(action)}`;
     if(add==1){ // folder
-        url = '&newfolder='+escape(action);
+        url = `&newfolder=${encodeURIComponent(action)}`;
     }else if (add==2){ //collection
-        url = '&newcollection='+escape(action);
+        url = `&newcollection=${encodeURIComponent(action)}`;
     }
     if (action=="move" || action=="copy"){
-        url = '&action='+escape(action)+'&dest='+add;
+        url = `&action=${encodeURIComponent(action)}&dest=${add}`;
     }
 
     $.get('/edit/edit_action?srcnodeid='+src+'&ids='+ids+'&style=popup'+url, function(data){
@@ -341,10 +341,10 @@ function reload_tree_nodes_children(used_trees, pids) {
 function edit_action_sync(action, src, nodeids, add) {
     consoledb.groupCollapsed('edit_action_sync');
     consoledb.log('action: '+action+', src: '+src+', nodeids: '+nodeids+', add: '+add);
-    var url = '&action='+escape(action);
+    var url = `&action=${encodeURIComponent(action)}`;
 
     if (action=="move" || action=="copy"){
-        url = '&action='+escape(action)+'&dest='+add;
+        url += `&dest=${add}`;
     }
 
     var ajax_response;

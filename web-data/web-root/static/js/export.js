@@ -93,7 +93,7 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
                 url += "&files=all";
             }
 
-            url += query ? "&q="+escape(query) : "";
+            if (query)  url += `&q=${encodeURIComponent(query)}`;
             url += "&sortfield="+sort
             url += limit ? "&limit="+limit : "";
             url += format ? "&format="+format : "";

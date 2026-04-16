@@ -64,7 +64,7 @@ function pick(obj)
             obj.style.margin="1px";
             spanid=obj.id;
         }
-    }    
+    }
 }
 
 function unpick(obj)
@@ -203,7 +203,7 @@ function showACLGroup(){
     obj.style.display="block";
     obj = document.getElementById("user_div");
     obj.style.display="none";
-    
+
     obj = document.getElementById("type");
     obj.value = "acl";
 }
@@ -213,7 +213,7 @@ function showACLUser(){
     obj.style.display="none";
     obj = document.getElementById("user_div");
     obj.style.display="block";
-    
+
     obj = document.getElementById("type");
     obj.value = "user";
 }
@@ -244,9 +244,9 @@ function edit_action(action, src, ids, add){
     if (action=="move" || action=="copy"){
         url = '&action='+escape(action)+'&dest='+add;
     }
-    
+
     $.get('/edit/edit_action?srcnodeid='+src+'&ids='+ids+'&style=popup'+url, function(data){
-       
+
         if (data!=""){
             return data;
         }
@@ -279,7 +279,7 @@ function disable_tree_nodes(used_trees, pids) {
                       continue;
                   }
                   $(testnode.li).addClass('fancytree-node-disabled');
-              }  
+              }
             }
             consoledb.groupEnd('--- disable_tree_nodes ---');
 }
@@ -300,7 +300,7 @@ function update_tree_nodes_labels(used_trees, changednodes) {
                   }
                   changed_node.title = new_label;
                   changed_node.renderTitle();
-              }  
+              }
             }
             consoledb.groupEnd('--- update_tree_nodes_labels ---');
 }
@@ -330,7 +330,7 @@ function reload_tree_nodes_children(used_trees, pids) {
                   parentnode.load(forceReload=true).done(function() {
                     parentnode.setExpanded(pn_expanded);
                     });
-              }  
+              }
             }
             consoledb.groupEnd('--- reload_tree_nodes_children ---');
 }
@@ -347,11 +347,11 @@ function edit_action_sync(action, src, nodeids, add) {
         url = '&action='+escape(action)+'&dest='+add;
     }
 
-    var ajax_response; 
+    var ajax_response;
 
     var ctree = parent.getcoltree();
     var htree = parent.gethometree();
-    
+
     if (src) {
         var src_node = htree.getNodeByKey(src);
         if (!src_node) {
@@ -361,7 +361,7 @@ function edit_action_sync(action, src, nodeids, add) {
             var src_node_title_old = src_node.title;
             src_node.setTitle(src_node_title_old + '<span class="mediatum-editor-nav-image-wait"/>');
         }
-    }    
+    }
 
     var options = {
           url: '/edit/edit_action?srcnodeid='+src+'&style=popup'+url,
@@ -523,7 +523,7 @@ function updateNodeLabels(ids) {
 // the users trash, import, upload and faulty dirs will be update any case
 
   var ajax_response;
-  
+
   var options = {
         url: '/edit/edit_action?action=getlabels&ids='+ids,
         async: false,

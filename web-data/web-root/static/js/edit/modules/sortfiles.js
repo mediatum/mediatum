@@ -8,4 +8,4 @@ $(document).ready(function () { // set correct height of scrollable content
         center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
         south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0}
     });
-}
+});

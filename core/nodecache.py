@@ -46,6 +46,15 @@ def _get_singleton_node(nodeclass):
            )
 
 
+def init():
+    get_root_node()
+    get_collections_node()
+    get_home_root_node()
+    get_workflows_node()
+    get_mappings_node()
+    get_metadatatypes_node()
+
+
 def get_root_node():
     """Root object may not change during runtime, so we can cache it indefinitely"""
     from core.systemtypes import Root

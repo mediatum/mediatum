@@ -17,6 +17,9 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime as _datetime
+import json as _json
+import os as _os
+import os.path as _
 import re
 import sys
 import codecs
@@ -25,9 +28,13 @@ import unicodedata
 import string as _string
 import time
 
+import backports as _backports
+import backports.functools_lru_cache as _
 from bibtexparser import load as bibtex_load
 from bibtexparser.bparser import BibTexParser
 import bibtexparser.customization
+import ruamel as _ruamel
+import ruamel.yaml as _
 
 import core as _core
 import schema as _schema
@@ -37,40 +44,6 @@ from contenttypes.document import Document
 from utils.date import parse_date
 
 logg = logging.getLogger(__name__)
-
-ESCAPE_BIBTEX_KEY = False
-
-def normchar(char_descriptor):
-    return unicodedata.lookup(char_descriptor).lower()
-
-
-din5007_variant2_translation = [
-    [normchar('LATIN CAPITAL LETTER A WITH DIAERESIS'), 'ae'],  # Auml
-    [normchar('LATIN CAPITAL LETTER O WITH DIAERESIS'), 'oe'],  # Ouml
-    [normchar('LATIN CAPITAL LETTER U WITH DIAERESIS'), 'ue'],  # Uuml
-    [normchar('LATIN SMALL LETTER A WITH DIAERESIS'), 'ae'],  # auml
-    [normchar('LATIN SMALL LETTER O WITH DIAERESIS'), 'oe'],  # ouml
-    [normchar('LATIN SMALL LETTER U WITH DIAERESIS'), 'ue'],  # uuml
-    [normchar('LATIN SMALL LETTER SHARP S'), 'ss'],  # szlig
-    [normchar('LATIN SMALL LETTER E WITH GRAVE'), 'e'],  # egrave
-    [normchar('LATIN SMALL LETTER E WITH ACUTE'), 'e'],  # eacute
-]
-
-d_escape = dict(din5007_variant2_translation)
-
-
-def escape_bibtexkey(s, default_char="_"):
-    res = ""
-    for c in s:
-        if c in _string.ascii_letters + _string.digits + "-_+:":
-            res = res + c
-            continue
-        elif c in d_escape:
-            res = res + d_escape[c]
-        else:
-            res = res + default_char
-    return res
-
 
 token = re.compile(r'@\w+\s*{\s*|[a-zA-Z-_]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-9a-zA-Z_]')
 comment = re.compile(r'%[^\n]*\n')
@@ -100,54 +73,13 @@ def getNow():
     return now
 
 
-article_types = [
-    ("article", "An article from a journal or magazine.",
-     ("author", "title", "journal", "year"),
-     ("volume", "number", "pages", "month", "note", "key")),
-    ("misc", "Use this type when nothing else seems appropriate.",
-     (),
-     ("author", "title", "howpublished", "month", "year", "note", "key")),
-    ("unpublished", "A document with an author and title, but not formally published. ",
-     ("author", "title", "note"),
-     ("month", "year", "key")),
-    ("book", "A book with an explicit publisher. ",
-     ("author or editor", "title", "publisher", "year"),
-     ("volume", "series", "address", "edition", "month", "note", "key")),
-    ("booklet", "A work that is printed and bound, but without a named publisher or sponsoring institution.",
-     ("title",),
-     ("author", "howpublished", "address", "month", "year", "note", "key")),
-    ("inbook", "A part of a book, which may be a chapter and/or a range of pages. ",
-     ("author or editor", "title", "chapter and/or pages", "publisher", "year"),
-     ("volume", "series", "address", "edition", "month", "note", "key")),
-    ("manual", "Technical documentation. ",
-     ("title"),
-     ("author", "organization", "address", "edition", "month", "year", "note", "key")),
-    ("techreport", "A report published by a school or other institution, usually numbered within a series. ",
-     ("author", "title", "institution", "year"),
-     ("type", "number", "address", "month", "note", "key")),
-    ("conference",
-     "An article in the proceedings of a conference. This entry is identical to the 'inproceedings' entry and is included for compatibility with another text formatting system. ",
-     ("author", "title", "booktitle", "year"),
-     ("editor", "pages", "organization", "publisher", "address", "month", "note", "key")),
-    ("proceedings", " The proceedings of a conference.",
-     ("title", "year"),
-     ("editor", "publisher", "organization", "address", "month", "note", "key")),
-    ("inproceedings", "An article in the proceedings of a conference. ",
-     ("author", "title", "booktitle", "year"),
-     ("editor", "pages", "organization", "publisher", "address", "month", "note", "key")),
-    ("incollection", "A part of a book with its own title.",
-     ("author", "title", "booktitle", "year"),
-     ("editor", "pages", "organization", "publisher", "address", "month", "note", "key")),
-    ("phdthesis", "A PhD thesis.",
-     ("author", "title", "school", "year"),
-     ("address", "month", "note", "key")),
-    ("mastersthesis", "A Master's thesis.",
-     ("author", "title", "school", "year"),
-     ("address", "month", "note", "key"))]
-
-
-def getAllBibTeXTypes():
-    return [bibname for bibname, description, required, optional in article_types]
+@_backports.functools_lru_cache.lru_cache()
+def get_document_type_fields():
+    with open(_os.path.normpath(_os.path.join(__file__, "..", "bibtex-article-types.yaml")), "rb") as f:
+        document_types = _ruamel.yaml.YAML(typ="safe", pure=True).load(f)
+    for fields in document_types.itervalues():
+        assert not frozenset(fields["required"]).intersection(fields["optional"])
+    return document_types
 
 
 def getbibtexmappings():
@@ -167,26 +99,17 @@ def getbibtexmappings():
     return bibtextypes
 
 
-def checkMappings():
-    s = getbibtexmappings()
-    for bibname, description, required, optional in article_types:
-        if bibname not in s:
-            logg.info("%s is not associated with any metatype", bibname)
-        else:
-            logg.info("%s -> %s", bibname, s[bibname])
-
-
 def _detecttype(doctype, fields):
     results = []
-    for bibname, description, required, optional in article_types:
+    for bibname, fields in get_document_type_fields().iteritems():
         score = 0
         if doctype.lower() == bibname.lower():
             score += 120
-        score -= len(required)
-        for field in required:
+        score -= len(fields["required"])
+        for field in fields["required"]:
             if field in fields:
                 score += 20
-        for field in optional:
+        for field in fields["optional"]:
             if field in fields:
                 score += 10
         results += [(score, bibname)]
@@ -253,76 +176,84 @@ def importBibTeX(entries, node, creator=None):
 
     logg.info("bibtex import: %d entries", len(entries))
 
-    for count, fields in enumerate(entries):
-        fields[u"key"] = docid_utf8 = fields.pop("ID")
-        doctype = fields.pop("ENTRYTYPE")
-        mytype = _detecttype(doctype, fields)
+    for fields in entries:
+        entry_key = fields[u"key"] = fields.pop("ID")
+        metadatatype = _detecttype(fields.pop("ENTRYTYPE"), fields)
+        if not metadatatype:
+            continue
+        if metadatatype not in bibtextypes:
+            raise MissingMapping(metadatatype)
+        metadatatype = _core.db.query(Metadatatype).filter_by(name=bibtextypes[metadatatype]).one()
+        mappingfields = {}
+        metadatafields = {}
+        dateformats = {}
 
-        if mytype:
-            fieldnames = {}
-            datefields = {}
-            if mytype not in bibtextypes:
-                msg = "bibtex mapping of bibtex type '{}' not defined - import stopped".format(mytype)
-                logg.error("%s", msg)
-                raise MissingMapping(msg)
-
-            metatype = bibtextypes[mytype]
-
-            # check for mask configuration
-            metadatatype = _core.db.query(Metadatatype).filter_by(name=metatype).one()
-            mask = metadatatype.get_mask(u"bibtex_import") or metadatatype.get_mask(u"bibtex")
-            for maskitem in (mask.all_maskitems if mask else ()):
-                try:
-                    bib_name = _core.db.query(Node).get(maskitem.get(u"mappingfield")).name
-                    mfield = _core.db.query(Node).get(maskitem.get(u"attribute"))
-                    metafield_name = mfield.name
-                    if mfield.get(u"type") == u"date":
-                        datefields[metafield_name] = mfield.metatype_data["format"]
-                except AttributeError as e:
-                    logg.error(
-                            "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s",
-                            docid_utf8,
-                            metatype,
-                            mytype,
-                            e,
-                           )
-                else:
-                    fieldnames[bib_name] = metafield_name
-
-            doc = Document(docid_utf8,schema=metatype)
-            for k, v in fields.iteritems():
-                k = fieldnames.get(k, k)  # map bibtex name
-
-                if k in datefields:  # format date field
-                    try:
-                        v = str(parse_date(v, datefields[k]))
-                        # if date format does not contains '%' the valid digit of the result must not be longer than the date format
-                        # e.g. if datefields[k] is 'yyyy' then the result v must be clipped after 4 characters
-                        # afterwards the result is expanded again (without the invalid digits)
-                        if datefields[k].find('%') < 0:
-                            v = v[:len(datefields[k])]
-                            v = str(parse_date(v, datefields[k]))
-                    except ValueError as e:
-                        logg.exception("bibtex exception: %s: %s", k, v)
-                        raise ValueError("bibtex_date_error")
-
-                doc.set(k, v)
-
-            # because the bibtex import contains only a subset of the metadata defined in metadatatype,
-            # all other metadata are created and set to default values.
-            # this will be done in the same manner as if the document is loaded in editor and saved without
-            # any changes (required fields are not considered)
-            editmask = metadatatype.get_mask(u"editmask")
-            if editmask:
-                editmask.set_default_metadata(doc)
-
+        # check for mask configuration
+        mask = metadatatype.get_mask("import-bibtex")
+        if not mask:
+            logg.warning("bibtex import: no 'import-bibtex' mask found, importing without mapping")
+        for maskitem in (mask.all_maskitems if mask else ()):
             try:
-                node.children.append(doc)
-                if creator is not None:
-                    doc.set("creator", creator)
-                doc.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-            except Exception as e:
-                logg.exception("bibtex exception")
-                raise ValueError()
+                mappingfield = _core.db.query(Node).get(maskitem.get(u"mappingfield"))
+                metadatafield = _core.db.query(Node).get(maskitem.get(u"attribute"))
+                # force AttributeError if those objects weren't found in DB:
+                mappingfield.name
+                metadatafield.name
+            except AttributeError as error:
+                logg.error(
+                        "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s",
+                        entry_key,
+                        metadatatype.name,
+                        metadatatype.get("bibtexmapping"),
+                        error,
+                       )
+            else:
+                if metadatafield.get(u"type") == u"date":
+                    dateformats[metadatafield.name] = metadatafield.metatype_data["format"]
+                mappingfields[mappingfield.name] = mappingfield
+                metadatafields[mappingfield.name] = metadatafield
+
+        doc = Document(entry_key, schema=metadatatype.name)
+        for fieldname, fieldvalue in fields.iteritems():
+            if fieldname in metadatafields:
+                fieldname = metadatafields[fieldname].name
+            value = fieldvalue
+            if fieldname in dateformats:  # format date field
+                value = str(parse_date(value, dateformats[fieldname]))
+                # if date format does not contains '%' the valid digit of the result must not be longer than the date format
+                # e.g. if dateformats[fieldname] is 'yyyy' then the result value must be clipped after 4 characters
+                # afterwards the result is expanded again (without the invalid digits)
+                if "%" not in dateformats[fieldname]:
+                    value = value[:len(dateformats[fieldname])]
+                    value = str(parse_date(value, dateformats[fieldname]))
+
+            # value must not be changed if 'exportformat' is empty
+            if fieldname in mappingfields and mappingfields[fieldname].get('exportformat'):
+                value = _schema.getMetadataType("mappingfield").evaluate_square_brackets(
+                        mappingfields[fieldname].get('exportformat'),
+                        metadatafields[fieldname],
+                        mask,
+                        fieldname,
+                        value=_json.dumps(dict(raw=fieldvalue,cooked=value)),
+                       )
+
+            doc.set(fieldname, value)
+
+        # because the bibtex import contains only a subset of the metadata defined in metadatatype,
+        # all other metadata are created and set to default values.
+        # this will be done in the same manner as if the document is loaded in editor and saved without
+        # any changes (required fields are not considered)
+        editmask = metadatatype.get_mask(u"editmask")
+        if editmask:
+            editmask.set_default_metadata(doc)
+
+        try:
+            node.children.append(doc)
+            if creator is not None:
+                doc.set("creator", creator)
+            doc.set("creationtime", unicode(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
+        except Exception as e:
+            logg.exception("bibtex exception")
+            raise ValueError()
 
     logg.debug("bibtex import: finished import")

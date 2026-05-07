@@ -1,0 +1,32 @@
+# CSL support special field types
+# see http://citationstyles.org/downloads/specification.html#appendix-iv-variables
+name:
+  - author
+  - collection-editor
+  - composer
+  - container-author
+  - director
+  - editor
+  - editorial-director
+  - illustrator
+  - interviewer
+  - original-author
+  - recipient
+  - reviewed-author
+  - translator
+date:
+  - accessed
+  - container
+  - event-date
+  - issued
+  - original-date
+  - submitted
+number:
+  - chapter-number
+  - collection-number
+  - edition
+  - issue
+  - number
+  - number-of-pages
+  - number-of-volumes
+  - volume

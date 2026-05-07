@@ -16,10 +16,15 @@ from itertools import imap as map
 from itertools import ifilter as filter
 range = xrange
 
+import logging as _logging
+
 import backports.functools_lru_cache as _backports_functools_lru_cache
+import sqlalchemy as _sqlalchemy
 import sqlalchemy.orm as _sa_orm
 
 import core as _core
+
+_logg = _logging.getLogger(__name__)
 
 
 @_backports_functools_lru_cache.lru_cache(maxsize=None)
@@ -40,10 +45,14 @@ def _get_singleton_node_from_cache(nodeclass):
 
 
 def _get_singleton_node(nodeclass):
-    return _core.db.session.merge(
-            _get_singleton_node_from_cache(nodeclass),
-            load=False,
-           )
+
+    node = _get_singleton_node_from_cache(nodeclass)
+    inspect = _sqlalchemy.inspect(node)
+    if inspect.modified or inspect.deleted or inspect.was_deleted:
+        _logg.debug("clearing node cache, as the cached %s object got changed", nodeclass.__name__)
+        _get_singleton_node_from_cache.cache_clear()
+        node = _get_singleton_node_from_cache(nodeclass)
+    return _core.db.session.merge(node, load=False)
 
 
 def get_root_node():

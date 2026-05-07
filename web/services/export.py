@@ -30,7 +30,6 @@ from utils.pathutils import getBrowsingPathList
 from utils.utils import esc, modify_tex
 from utils.utils import xml_remove_illegal_chars
 import web.services.jsonnode as jsonnode
-from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
 from web.services.serviceutils import attribute_name_filter
 from lxml import etree
 from core.xmlnode import add_node_to_xmldoc, create_xml_nodelist
@@ -364,139 +363,11 @@ def struct2csv(path, qualifier, query_string, host_url, params, d, sep=u';', str
         return r.encode("utf8")
 
 
-def struct2rss(path, qualifier, query_string, host_url, params, struct):
-    nodelist = struct['nodelist']
-    language = params.get('lang', 'en')
-    items_list = []
-
-    hostjoin = _functools.partial(_urlparse.urljoin, host_url)
-    collections = get_collections_node()
-    user = get_guest_user()
-
-    for n in nodelist:
-        nodename = n.name
-        nodeid = str(n.id)
-        updatetime = utime = try_node_date(n)
-
-        # categories to be included in all items - mask generated or not
-        default_categories = u'<category>node type: ' + n.type + '/' + n.schema + u'</category>\r\n'
-
-        # check for export mask for this node
-        try:
-            try:
-                mdt = n.metadatatype
-            except:
-                mdt = None
-            mask = mdt.getMask('rss')
-            if mask.get('masktype') != 'export':
-                mask = None
-        except:
-            mask = None
-
-        if mask:
-            item_xml = u'<item>\r\n' + mask.getViewHTML([n], flags=8) + default_categories + u'\r\n</item>\r\n'
-            items_list = items_list + [(updatetime, nodename, nodeid, item_xml)]
-            continue
-
-        # no rss export mask: build default item from nodesmall mask
-        item_d = {}
-
-        browsingPathList = getBrowsingPathList(n)
-        browsingPathList = [x for x in browsingPathList if x[-1].has_read_access(user=user) and x[-1].is_descendant_of(collections)]
-        browsingPathList_names = [map(lambda x: x.name, browsingPath) for browsingPath in browsingPathList]
-
-        # assumption: longest path is most detailled and illustrative for being used in the title
-        x = sorted([[len(p), i, p] for i, p in enumerate(browsingPathList_names)])
-        x.reverse()
-        try:
-            most_detailed_path = x[0][2]
-        except:  # browsing path list may be empty (for directories, collections, ...)
-            most_detailed_path = ''
-
-        item_d['title'] = esc(u"{} ({}, {}/{}) {}".format(nodename or u'-unnamed-node-',
-                                                          nodeid, n.type, n.schema, u"/".join(most_detailed_path)))
-        item_d['item_pubDate'] = utime
-        item_d['guid'] = hostjoin(u'/node?id={}'.format(nodeid))
-        item_d['link'] = hostjoin(u'/node?id={}'.format(nodeid))
-
-        if mdt:
-            lang_mask = mdt.masks.filter(Node.name.startswith(u"nodesmall")).filter(Node.a.language == language).first()
-            if lang_mask is not None:
-                mask = lang_mask
-            else:
-                mask = mdt.get_mask('nodesmall')
-        else:
-            mask = None
-
-        if mask is not None:
-            attr_list = mask.getViewHTML([n], VIEW_DATA_ONLY, language)  # [[attr_name, value, label, type], ...]
-        else:
-            attr_list = [['', n.id, 'node id', ''], ['', n.name, 'node name', ''], ['', n.type + "/" + n.schema, 'node type', ''], ]
-
-        description = u''
-        for x in attr_list:
-            description = description + (u'''<b>%s: </b>%s<br/>\r\n''' % (x[2], x[1]))
-
-        item_d['description'] = description
-        categories = default_categories
-
-        for x in browsingPathList_names:
-            categories = categories + u'<category>' + esc(u'/'.join(x)) + u'</category>\r\n'
-
-        ddcs = n.get('ddc').strip()
-        if ddcs.strip():
-            ddcs = ddcs.split(';')
-            for ddc in ddcs:
-                categories = categories + u'<category>' + esc(ddc) + u'</category>\r\n'
-
-        subjects = n.get('subject').strip()
-        if subjects:
-            subjects = subjects.split(';')
-            for subject in subjects:
-                categories = categories + u'<category>' + esc(subject) + u'</category>\r\n'
-
-        item_d['categories'] = categories
-
-        for k, v in item_d.items():
-            item_d[k] = v
-
-        items_list = items_list + [(updatetime, nodename, nodeid, (template_rss_item % item_d))]
-
-    if items_list:
-        items_list.sort()
-        items_list.reverse()
-
-    items = ''
-    for x in items_list:
-        items += (x[3] + u'\r\n')
-
-    pubDate = lastBuildDate = format_date(format='rfc822')
-
-    struct['dataready'] = (u"%.3f" % (time.time() - struct['build_response_start']))
-
-    fcd = feed_channel_dict.copy()
-    fcd['lang'] = u'de'
-    fcd['pubdate'] = pubDate
-    fcd['lastbuild'] = lastBuildDate
-    fcd['link'] = host_url
-    fcd['atom_link'] = hostjoin(path)
-
-    if 'feed_info' in params:
-        for k, v in params['feed_info'].items():
-            fcd[k] = v
-    else:
-        fcd['title'] = hostjoin(path + query_string)
-    fcd['items'] = items
-    s = template_rss_channel % fcd  # params['feed_info']
-
-    return s.encode("utf8")
-
 supported_formats = [
     [['xml', ''], struct2xml, 'text/xml'],
     [['json'], struct2json, 'application/json'],
     [['csv'], struct2csv, 'text/plain'],
     [['template_test'], struct2template_test, 'text/plain'],
-    [['rss'], struct2rss, 'application/rss+xml'],
 ]
 
 

@@ -18,50 +18,9 @@ from core.database.postgres.node import Node
 logg = logging.getLogger(__name__)
 
 
-class MappingReplacement():
-
-    def __init__(self):
-        self.description = ""
-
-    """
-        s:        input string to be replaced
-        var:      variable values
-        node:     node holding values
-        attrnode: node with attributes to be passed
-    """
-
-    def func(self, s, var, node, attrnode):
-        raise None
-
-# define standard replacements
-
-
-class MappingExtStdAttr(MappingReplacement):  # replace all 'att:X' types
-
-    def func(self, s, var, node, attrnode):
-        if var.startswith("att:"):
-            if var == "att:field":
-                s = s.replace("[" + var + "]", attrnode.getName())
-            elif var == "att:id":
-                s = s.replace("[" + var + "]", unicode(node.id))
-            elif var == "att:nodename":
-                s = s.replace("[" + var + "]", node.name)
-            elif var == "att:filename":
-                s = s.replace("[" + var + "]", node.name)
-            else:
-                s = s.replace("[" + var + "]", ustr(node.get(var.split(":")[-1])))
-        return s
-
-
 class m_mappingfield(Metatype):
 
     name = "mappingfield"
-
-    def __init__(self):
-        self.extensions = [MappingExtStdAttr()]
-
-    def addMappingExt(self, ext):
-        self.extensions.append(ext)
 
     def editor_get_html_form(self, field, value="", width=400, lock=0, language=None, required=None):
 
@@ -116,59 +75,74 @@ class m_mappingfield(Metatype):
             return oriString    # syntax error; don't do anything
         return oriString.replace(m.groups()[0], m.groups()[1])
 
-    def _replace_vars(self, s, node, attrnode, field_value="", options=[], mask=None, default=""):
-        # if attrnode and node:
+    def evaluate_square_brackets(
+            self,
+            s,
+            metadatafield,
+            mask=None,
+            mappingfield_name="",
+            node=None,
+            value=None,
+            default_value="",
+            enquote_value=False,
+           ):
+        value = node.get(metadatafield.name) if value is None else value
         for var in re.findall(r'\[(.+?)\]', s):
             if var.startswith("att:field|replacestring"):
-                s2 = self.replaceStr(attrnode.getName(), var[24:])
+                s2 = self.replaceStr(metadatafield.getName(), var[24:])
                 s = s.replace("[" + var + "]", s2)
 
             elif var.startswith("att:field|substring"):
-                s2 = self.subStr(attrnode.getName(), var[20:])
+                s2 = self.subStr(metadatafield.getName(), var[20:])
                 s = s.replace("[" + var + "]", s2)
 
             elif var == "field":
-                s = s.replace("[field]", field_value)
+                s = s.replace("[field]", mappingfield_name)
 
             elif var == ("cmd:getTAL"):
-                s = exportutils.handleCommand('cmd:getTAL', var, s, node, attrnode, field_value, options, mask)
+                s = exportutils.handleCommand(s, mask, value, node)
 
             elif var.startswith("value|formatdate"):
-                date_from = format_date(parse_date(node.get(attrnode.getName())), var[18:-1])
+                date_from = format_date(parse_date(value), var[18:-1])
                 s = s.replace("[" + var + "]", date_from)
 
             elif var.startswith("value|replacestring"):
-                s2 = self.replaceStr(node.get(attrnode.getName()), var[20:])
+                s2 = self.replaceStr(value, var[20:])
                 s = s.replace("[" + var + "]", s2)
 
             elif var.startswith("value|substring"):
-                s2 = self.subStr(node.get(attrnode.getName()), var[16:])
+                s2 = self.subStr(value, var[16:])
                 s = s.replace("[" + var + "]", s2)
 
             elif var.startswith("value|nodename"):
                 try:
-                    s2 = _core.db.query(Node).get(node.get(attrnode.getName())).getName()
+                    s2 = _core.db.query(Node).get(value).getName()
                 except:
                     s2 = node.getName()
                 s = s.replace("[" + var + "]", s2)
 
             elif var == "value":
-                v = getMetadataType(attrnode.getFieldtype()).viewer_get_data(attrnode, None, None, node, "")[1]
-                v = v or node.get(attrnode.getName()) or default
-                if "t" in options and not v.isdigit():
+                v = getMetadataType(metadatafield.getFieldtype()).viewer_get_data(metadatafield, None, None, node, "")[1]
+                v = v or value or default_value
+                if enquote_value and not v.isdigit():
                     v = u'"{}"'.format(v)
                 s = s.replace("[value]", v)
 
             elif var == "ns":
                 ns = ""
-                for mapping in attrnode.get("exportmapping").split(";"):
+                for mapping in metadatafield.get("exportmapping").split(";"):
                     n = _core.db.query(Node).get(mapping)
                     if n.getNamespace() != "" and n.getNamespaceUrl() != "":
                         ns += 'xmlns:' + n.getNamespace() + '="' + n.getNamespaceUrl() + '" '
                 s = s.replace("[" + var + "]", ns)
 
-            for ext in self.extensions:
-                s = ext.func(s, var, node, attrnode)
+            if var.startswith("att:"):
+                s = s.replace("[{}]".format(var),
+                    metadatafield.name if var == "att:field" else
+                    unicode(node.id) if var == "att:id" else
+                    node.name if var in ("att:nodename", "att:filename") else
+                    ustr(node.get(var.split(":")[-1]))
+                   )
 
         return s
 
@@ -220,8 +194,15 @@ class m_mappingfield(Metatype):
                 field_value = ""
                 default = ""
 
-            field_vals.append(self._replace_vars(fmt, node, attrnode, field_value, mask.getExportOptions(),
-                                                                                                 mask, default))
+            field_vals.append(self.evaluate_square_brackets(
+                fmt,
+                attrnode,
+                mask,
+                field_value,
+                node,
+                default_value=default,
+                enquote_value="t" in mask.getExportOptions(),
+               ))
 
         ret += (u"" if mask.hasExportOption("l") else separator).join(field_vals)
 
@@ -229,4 +210,4 @@ class m_mappingfield(Metatype):
         if mapping_footer:
             ret += "\r\n" + mapping_footer
 
-        return self._replace_vars(modify_tex(ret, 'strip'), node, mask)
+        return self.evaluate_square_brackets(modify_tex(ret, 'strip'), mask, node=node)

@@ -35,11 +35,6 @@ def no_html(s):
     return tagpattern.sub('', s)
 
 
-def prss(s):
-    '''protect rss item elements'''
-    return esc(no_html(esc(no_html(esc(no_html(esc(u(s))))))))
-
-
 def cdata(s):
     return '<![CDATA[%s]]>' % s
 
@@ -216,37 +211,13 @@ def normLanguage_iso_639_2_t(s, emptyval=''):
         return emptyval
 
 
-def runTALSnippet(s, context, mask=None):
-    if s.find('tal:') < 0:
-        return s
-
-    header = u'''<?xml version="1.0" encoding="UTF-8" ?>'''
-    xmlns = u'''<talnamespaces xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">'''
-    footer = u'''</talnamespaces>'''
-    cutter = u"----cut-TAL-result-here----\n"
-
-    if mask:
-        exportheader = mask.get('exportheader')
-        if exportheader.startswith("<?xml"):
-            header = exportheader
-        else:
-            header += exportheader
-        footer += mask.get('exportfooter')
-
-    to_be_processed = header + xmlns + cutter + s + cutter + footer
-    wr_result = tal.getTALstr(to_be_processed, context, mode='xml')
-
-    return wr_result[wr_result.find(cutter)+len(cutter):wr_result.rfind(cutter)]
-
-
 _default_context = dict(
-    esc = esc,      # may be needed for example in escaping rss item elements
-    esc2 = esc2,    # may be needed for example in escaping rss item elements
+    esc = esc,
+    esc2 = esc2,
     no_html = no_html,
     u = u,
     utf82iso = utf82iso,
     iso2utf8 = iso2utf8,
-    prss = prss,    # protect rss
     parse_date = parse_date,
     format_date = format_date,
     cdata = cdata,
@@ -261,14 +232,33 @@ def registerDefaultContextEntry(key, entry):
     _default_context[key] = entry
 
 
-def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], mask=None):
+def handleCommand(template, mask, value, node=None):
     from web.frontend.filehelpers import build_filelist, get_transfer_url
-    if cmd == 'cmd:getTAL':
-        context = _default_context.copy()
-        context['node'] = node
-        context['build_filelist'] = build_filelist
-        context['get_transfer_url'] = get_transfer_url
-        context['host_url_join'] = _functools.partial(_urlparse.urljoin, _flask.request.host_url)
-        result = runTALSnippet(s, context, mask)
-
-        return result.replace("[" + var + "]", "")
+    if "tal:" not in template:
+        return ""
+    context = _default_context.copy()
+    context.update(
+        node=node,
+        build_filelist=build_filelist,
+        get_transfer_url=get_transfer_url,
+        host_url_join=_functools.partial(_urlparse.urljoin, _flask.request.host_url),
+        value=value,
+       )
+    cutter = u"----cut-TAL-result-here----"
+    template = u'''{xmlheader}{exportheader}
+            <talnamespaces
+                    xmlns:tal="http://xml.zope.org/namespaces/tal"
+                    xmlns:metal="http://xml.zope.org/namespaces/metal"
+                   >
+            {cutter}{template}{cutter}
+            </talnamespaces>
+            {exportfooter}
+        '''.format(
+            xmlheader="" if mask.get("exportheader").startswith("<?xml") else '<?xml version="1.0" encoding="UTF-8" ?>',
+            exportheader=mask.get("exportheader"),
+            exportfooter=mask.get("exportfooter"),
+            cutter=cutter,
+            template=template,
+           )
+    template = tal.getTALstr(template, context, mode='xml')
+    return template[template.find(cutter)+len(cutter):template.rfind(cutter)].replace("[cmd:getTAL]", "")

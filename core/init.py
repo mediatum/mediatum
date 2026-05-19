@@ -20,6 +20,7 @@ import werkzeug.utils as _
 from web import frontend as _web_frontend
 import core.config as config
 import core as _core
+import core.nodecache as _
 import core.templating as _
 import core.translation as _
 import core.request_handler as _
@@ -327,6 +328,7 @@ def basic_init(
     connect_db(automigrate)
     _set_current_init_state(init_state)
     _init_default_thumbnail()
+    _core.nodecache.init()
     _core.db.session.rollback()
 
 

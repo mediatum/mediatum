@@ -514,8 +514,7 @@ class WorkflowStep(Node):
         display_name_attr = self.parents[0].display_name_attribute
         i = 0
         for item in self.children.prefetch_attrs():
-            c.append({"id": unicode(item.id), "creationtime": date.format_date(
-                date.parse_date(item.get('creationtime')), 'dd.mm.yyyy HH:MM:SS')})
+            c.append({"id": unicode(item.id), "creationtime": item.get('creationtime')})
             if display_name_attr:
                 c[i]["name"] = item.get(display_name_attr)
             else:

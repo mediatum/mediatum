@@ -14,6 +14,8 @@ import logging as _logging
 from functools import partial as _partial
 
 import flask as _flask
+import werkzeug as _werkzeug
+import werkzeug.exceptions as _
 
 import core as _core
 import core.translation as _core_translation
@@ -234,6 +236,9 @@ class _WebContext:
 def _callhandler(handler_func, req):
     try:
         status = handler_func(req)
+    except _werkzeug.exceptions.HTTPException:
+        _core.db.session.rollback()
+        raise
     except Exception as e:
         # XXX: this shouldn't be in Athana, most of it is mediaTUM-specific...
         # TODO: add some kind of exception handler system for Athana

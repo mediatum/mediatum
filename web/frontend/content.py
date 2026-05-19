@@ -9,6 +9,7 @@ from collections import OrderedDict
 import logging
 from warnings import warn
 
+import flask as _flask
 import sqlalchemy as _sqlalchemy
 import sqlalchemy.orm.session as _
 
@@ -360,9 +361,12 @@ class ContentList(ContentBase):
             self.sortfields[0] = default_sortfield if default_sortfield else u"-node.id"
 
         liststyle = req.args.get("liststyle")
-        if not liststyle:
-            liststyle = self.collection.get("style", "list")
-        self.liststyle = get_list_style(liststyle)
+        try:
+            self.liststyle = get_list_style(liststyle or self.collection.get("style", "list"))
+        except KeyError:
+            if liststyle:
+                _flask.abort(404, "requested liststyle '{}' does not exist".format(liststyle))
+            raise RuntimeError("liststyle missing for collection {}".format(self.collection.id))
 
         self.nodes_per_page_from_req = _web_common_pagination.get_nodes_per_page(req.args.get("nodes_per_page"), None, False)
         self.nodes_per_page = self.node_query.count() if self.nodes_per_page_from_req == "all" else self.nodes_per_page_from_req
@@ -436,6 +440,8 @@ class ContentList(ContentBase):
         if nav:
             if nav in ("next", "prev"):
                 # we want to display the node _after_ or _before_ `show_node`
+                if not self.show_id:
+                    _flask.abort(400, "show node id missing")
                 sortfields_to_comp = prepare_sortfields(show_node, self.sortfields)
                 before = nav == "prev"
                 position_cond = _position_filter(sortfields_to_comp, before)
@@ -489,6 +495,8 @@ class ContentList(ContentBase):
 
         # we fetch one more to see if more nodes are available (on the next page)
         nodes = q_nodes.distinct().limit(nodes_per_page+1).prefetch_attrs().all()
+        if (self.before or self.after) and not nodes:
+            _flask.abort(410, "pagination position invalid/outdated")
         self.nodes = nodes
 
         if len(nodes) > nodes_per_page:

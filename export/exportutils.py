@@ -232,6 +232,10 @@ def registerDefaultContextEntry(key, entry):
     _default_context[key] = entry
 
 
+def _host_url_join(url):
+    return _urlparse.urljoin(_flask.request.host_url, url)
+
+
 def handleCommand(template, mask, value, node=None):
     from web.frontend.filehelpers import build_filelist, get_transfer_url
     if "tal:" not in template:
@@ -241,7 +245,7 @@ def handleCommand(template, mask, value, node=None):
         node=node,
         build_filelist=build_filelist,
         get_transfer_url=get_transfer_url,
-        host_url_join=_functools.partial(_urlparse.urljoin, _flask.request.host_url),
+        host_url_join=_host_url_join,
         value=value,
        )
     cutter = u"----cut-TAL-result-here----"

@@ -219,12 +219,14 @@ def import_csl(record, target=None, name=None, testing=False):
             continue
 
         value = get_converted_from_csl_record(mappingfield.name)
+        if value is None:
+            continue
         # fixes for special fields
         if mfield.get(u"type") == "url":
             value += u";Link"
 
         # get rid of month and day
-        if mfield.name == u'year' and value is not None:
+        if mfield.name == u'year':
             value = value[0:4] + u'-00-00T00:00:00'
 
         # value must not be changed if 'exportformat' is empty
@@ -237,8 +239,7 @@ def import_csl(record, target=None, name=None, testing=False):
                     value=_json.dumps(dict(raw=record.get(mappingfield.name),cooked=value)),
                    )
 
-        if value is not None:
-            node.set(mfield.name, value)
+        node.set(mfield.name, value)
 
     if target:
         target.content_children.append(node)

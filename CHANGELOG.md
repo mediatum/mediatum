@@ -1,6 +1,21 @@
 # Change Log
 All notable changes to mediaTUM will be documented in this file.
 
+## [v2026.06] - 2026-06-15
+
+### Added
+- workflowstep template2metafields
+- workflowstep replacenodemetadatatype
+
+### Fixed
+- uwsgi and nginx proxy\_cookie\_flags cooperate (`x-forwarded`)
+
+### Changed
+- removed workflowstep setmetadatatype
+- bibtex import masks must be named "import-bibtex"
+- citeproc import masks must be named "import-citeproc"
+- respect "Line format" of mapping fields for citeproc and bibtex import
+
 ## [V2026.03] - 2026-03-09
 
 ### Added

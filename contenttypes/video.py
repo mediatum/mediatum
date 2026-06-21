@@ -125,7 +125,14 @@ class Video(Content):
             ffmpeg_call = ["ffmpeg", "-y"]
 
             if thumbframe:
-                ffmpeg_call += ['-ss', str(thumbframe)]  # change frame used as thumbnail
+                # Validate thumbframe is a number to prevent command injection
+                try:
+                    thumbframe_num = float(thumbframe)
+                    if thumbframe_num < 0:
+                        raise ValueError("thumbframe must be non-negative")
+                    ffmpeg_call += ['-ss', str(thumbframe_num)]  # change frame used as thumbnail
+                except (ValueError, TypeError) as e:
+                    logg.warning("Invalid thumbframe value '%s': %s. Using default.", thumbframe, e)
 
             ffmpeg_call += ['-i', video_file.abspath]  # input settings
 

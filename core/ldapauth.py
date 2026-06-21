@@ -19,7 +19,21 @@ from utils.compat import iteritems
 
 logg = logging.getLogger(__name__)
 
-ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+# TLS certificate verification settings
+# OPT_X_TLS_DEMAND requires TLS, OPT_X_TLS_HARD requires valid certificate
+# To disable certificate verification (NOT RECOMMENDED), set ldap.tls_require_cert=never in config
+_tls_require_cert_options = {
+    "never": ldap.OPT_X_TLS_NEVER,
+    "allow": ldap.OPT_X_TLS_ALLOW,
+    "try": ldap.OPT_X_TLS_TRY,
+    "demand": ldap.OPT_X_TLS_DEMAND,
+    "hard": ldap.OPT_X_TLS_HARD,
+}
+_tls_require_cert = config.get("ldap.tls_require_cert", "demand").lower()
+if _tls_require_cert not in _tls_require_cert_options:
+    logg.warning("Invalid ldap.tls_require_cert value '%s', using 'demand'", _tls_require_cert)
+    _tls_require_cert = "demand"
+ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, _tls_require_cert_options[_tls_require_cert])
 ldap.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND)
 ldap.set_option(ldap.OPT_REFERRALS, 0)
 

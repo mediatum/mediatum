@@ -25,6 +25,22 @@ from core.database.postgres.file import File
 logg = logging.getLogger(__name__)
 
 
+def _safe_path_join(base_dir, *paths):
+    """Safely join paths and validate result stays within base_dir.
+
+    Prevents path traversal attacks by ensuring the resolved path
+    is within the expected base directory.
+
+    Returns the safe absolute path or None if path escapes base_dir.
+    """
+    base_dir = os.path.abspath(base_dir)
+    joined = os.path.normpath(os.path.join(base_dir, *paths))
+    # Ensure the joined path starts with base_dir
+    if not joined.startswith(base_dir + os.sep) and joined != base_dir:
+        return None
+    return joined
+
+
 _NamedFile = _collections.namedtuple(
     "_NamedFile",
     "short_path description file_size language_list technical_name"
@@ -71,45 +87,62 @@ def getContent(req, ids):
     if "action" in req.values:
         if req.values['action'] == "getfile":  # deliver filecontent
             data = ""
+            datadir = config.get("paths.datadir")
             for f in [f for f in node.files if f.mimetype == "text/html"]:
-                filepath = f.abspath.replace(config.get("paths.datadir"), '')
-                if req.values.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
-                    with codecs.open(config.get("paths.datadir") + filepath, "r", encoding='utf8') as fil:
-                        data = fil.read()
-                    logg.info("%s opened startpage %s for node %s (%s, %s)", user.login_name, filepath, node.id, node.name, node.type)
+                filepath = f.abspath.replace(datadir, '')
+                if req.values.get('filename') == filepath:
+                    # Validate path to prevent traversal attacks
+                    safe_path = _safe_path_join(datadir, filepath)
+                    if safe_path and os.path.exists(safe_path):
+                        with codecs.open(safe_path, "r", encoding='utf8') as fil:
+                            data = fil.read()
+                        logg.info("%s opened startpage %s for node %s (%s, %s)", user.login_name, filepath, node.id, node.name, node.type)
                     break
             req.response.set_data(json.dumps({'filecontent': data}, ensure_ascii=False))
             req.response.mimetype = 'application/json'
 
         if req.values['action'] == "save":  # save filedata
+            datadir = config.get("paths.datadir")
             if req.values.get('filename') == "add":  # add new file
                 maxid = 0
                 for f in [f for f in node.files if f.type == "content"]:
                     with suppress(ValueError, warn=False):
                         if int(f.abspath[:-5].split("_")[-1]) >= maxid:
                             maxid = int(f.abspath[:-5].split("_")[-1]) + 1
-                filename = 'html/{}_{}.html'.format(req.values['id'], maxid)
-                while os.path.exists(config.get("paths.datadir") + filename):
+                # Validate node ID is numeric to prevent path injection
+                try:
+                    node_id = int(req.values['id'])
+                except (ValueError, TypeError):
+                    logg.warning("Invalid node ID in startpage save: %s", req.values.get('id'))
+                    return
+                filename = 'html/{}_{}.html'.format(node_id, maxid)
+                safe_path = _safe_path_join(datadir, filename)
+                while safe_path and os.path.exists(safe_path):
                     maxid = maxid + 1
-                    filename = 'html/{}_{}.html'.format(req.values['id'], maxid)
-                with codecs.open(config.get("paths.datadir") + filename, "w", encoding='utf8') as fil:
-                    fil.write(req.values['data'])
-                node.files.append(File(filename, u"content", u"text/html"))
-                _core.db.session.commit()
-                logg.info("%s added startpage %s for node %s (%s, %s)", user.login_name, filename, node.id, node.name, node.type)
+                    filename = 'html/{}_{}.html'.format(node_id, maxid)
+                    safe_path = _safe_path_join(datadir, filename)
+                if safe_path:
+                    with codecs.open(safe_path, "w", encoding='utf8') as fil:
+                        fil.write(req.values['data'])
+                    node.files.append(File(filename, u"content", u"text/html"))
+                    _core.db.session.commit()
+                    logg.info("%s added startpage %s for node %s (%s, %s)", user.login_name, filename, node.id, node.name, node.type)
             else:
                 for f in [f for f in node.files if f.mimetype == "text/html"]:
-                    filepath = f.abspath.replace(config.get("paths.datadir"), '')
-                    if req.values.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
-                        with open(config.get("paths.datadir") + filepath, "w") as fil:
-                            try:
-                                fil.write(req.values.get('data'))
-                            except UnicodeEncodeError:
-                                # some unicode characters like 'Black Circle' &#9679; are not translated in the
-                                # html entity by the current ckeditor version
-                                fil.write(req.values.get('data').encode('ascii', 'xmlcharrefreplace'))
+                    filepath = f.abspath.replace(datadir, '')
+                    if req.values.get('filename') == filepath:
+                        # Validate path to prevent traversal attacks
+                        safe_path = _safe_path_join(datadir, filepath)
+                        if safe_path and os.path.exists(safe_path):
+                            with open(safe_path, "w") as fil:
+                                try:
+                                    fil.write(req.values.get('data'))
+                                except UnicodeEncodeError:
+                                    # some unicode characters like 'Black Circle' &#9679; are not translated in the
+                                    # html entity by the current ckeditor version
+                                    fil.write(req.values.get('data').encode('ascii', 'xmlcharrefreplace'))
 
-                        logg.info("%s saved startpage %s for node %s (%s, %s)", user.login_name, filepath, node.id, node.name, node.type)
+                            logg.info("%s saved startpage %s for node %s (%s, %s)", user.login_name, filepath, node.id, node.name, node.type)
                         break
 
             req.response.set_data(_tal.processTAL(

@@ -154,8 +154,14 @@ class Container(Data, ContainerMixin, SchemaMixin):
                 node = _core.db.query(_core.database.postgres.node.Node).get(node_id)
                 fname_allowed = node and node.has_read_access(user=user)
 
-            fpath = "{}html/{}".format(config.get("paths.datadir"),
-                                       fname)
+            # Validate path to prevent path traversal attacks
+            datadir = config.get("paths.datadir")
+            base_html_dir = os.path.abspath(os.path.join(datadir, "html"))
+            fpath = os.path.normpath(os.path.join(base_html_dir, fname))
+            # Ensure the resolved path is within the html directory
+            if not fpath.startswith(base_html_dir + os.sep):
+                logg.warning("Path traversal attempt blocked: %s", fname)
+                fname_allowed = False
             if fname_allowed and os.path.isfile(fpath):
                 with codecs.open(fpath, "r", encoding='utf8') as c:
                     content = c.read()

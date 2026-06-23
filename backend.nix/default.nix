@@ -67,6 +67,7 @@ let
         buildInputs = oldAttrs.buildInputs ++ [ pkgs.lcms2 ];
       });
     inherit (pkgs)
+      anubis
       ffmpeg
       glibcLocales
       graphviz-nox

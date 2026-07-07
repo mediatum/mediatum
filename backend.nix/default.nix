@@ -72,7 +72,7 @@ let
       glibcLocales
       graphviz-nox
       pdftk
-      poppler_utils
+      poppler-utils
     ;
     icu = pkgs.icu.dev;
     inherit (pkgs.perlPackages) ImageExifTool;

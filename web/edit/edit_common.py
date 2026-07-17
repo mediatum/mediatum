@@ -34,7 +34,7 @@ from web import frontend as _web_frontend
 from web.frontend.content import get_make_search_content_function
 from web.frontend.search import NoSearchResult
 import re
-import urllib
+import urllib as _urllib
 
 import web.common.pagination as _web_common_pagination
 from utils.url import build_url_from_path_and_params as _build_url_from_path_and_params
@@ -62,7 +62,7 @@ class EditorNavList:
 
         params.update(param_overrides)
         params = {k: v.encode('utf-8') if not isinstance(v, int) else v for k, v in iteritems(params) if v is not None and v != ""}
-        return '/edit/edit_content?' + urllib.urlencode(params)
+        return '/edit/edit_content?{}'.format(_urllib.urlencode(params))
 
 
 class EditorNodeList:

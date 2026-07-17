@@ -6,3 +6,6 @@ msgstr "Textseite"
 
 msgid "admin_wfstep_endremove"
 msgstr "Entferne aus Workflow"
+
+msgid "admin_wfstep_end_interactive"
+msgstr "Entferne Knoten durch Aufruf der Step-Seite"

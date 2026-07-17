@@ -36,9 +36,6 @@ class WorkflowStep_Classify(WorkflowStep):
         only_sub=False,
     )
 
-    def show_workflow_node(self, node, req):
-        return self.forwardAndShow(node, True, req)
-
     def runAction(self, node):
         name = ""
         func = start = end = None
@@ -66,7 +63,7 @@ class WorkflowStep_Classify(WorkflowStep):
                     cnode.children.append(node)
                 if not self.settings['only_sub']:  # add to node (no hierarchy)
                     pnode.children.append(node)
-                _core.db.session.commit()
+        self.forward(node, True)
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(

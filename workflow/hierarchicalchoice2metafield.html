@@ -20,7 +20,10 @@
         <tal:block metal:use-macro="workflow/workflow.html/workflow_buttons"/>
     </form>
     <div tal:condition="python:posttext!=''" tal:content="structure posttext" style="margin-top:20px;"/>
-    <div tal:content="raw metafielderror"> </div>
+    <div tal:condition="python:metafielderror">
+      <tal:block i18n:translate="wf_target_metafield_error"/>:
+      <tal:block tal:content="metafielderror"/>
+    </div>
 </tal:block>
 
 

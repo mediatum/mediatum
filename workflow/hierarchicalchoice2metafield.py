@@ -93,16 +93,13 @@ class WorkflowStep_HierarchicalChoice2Metafield(_workflow.WorkflowStep):
         lang = _core.translation.set_language(req.accept_languages)
 
         if "gotrue" not in req.values:
-            metafielderror = u""
+            metafielderror = None
         elif _source_has_value(tree_data, req.values["hierarchicalmetafield"]):
             node.attrs[self.settings["target-attribute-name"]] = req.values["hierarchicalmetafield"]
             _core.db.session.commit()
             return self.forwardAndShow(node, True, req)
         else:
-            metafielderror = u"{}: {}".format(
-                    _core.translation.translate(lang, "wf_target_metafield_error"),
-                    req.values["hierarchicalmetafield"],
-                )
+            metafielderror = req.values["hierarchicalmetafield"]
 
         fancytree_source = _json.dumps(_make_fancytree_source(tree_data))
 

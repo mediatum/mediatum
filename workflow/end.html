@@ -15,4 +15,8 @@
         <label for="stepsetting_endsetupdatetime" i18n:translate="admin_wfstep_endsetupdatetime"> </label>
         <input type="checkbox" name="stepsetting_endsetupdatetime" id="stepsetting_endsetupdatetime" tal:attributes="checked python:'checked' if endsetupdatetime else None" value="1"/>
     </div>
+    <div>
+        <label for="stepsetting_interactive" i18n:translate="">admin_wfstep_end_interactive</label>
+        <input type="checkbox" name="stepsetting_interactive" tal:attributes="checked python:'checked' if interactive else None" value="1"/>
+    </div>
 </metal:block>

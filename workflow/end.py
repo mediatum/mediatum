@@ -24,14 +24,16 @@ class WorkflowStep_End(WorkflowStep):
         endremove=False,
         endsetupdatetime=False,
         endtext=None,
+        interactive=True,
     )
 
     def show_workflow_node(self, node, req):
-
+        if not self.settings["interactive"]:
+            raise RuntimeError("cannot show non-interactive end step")
         if self.settings["endremove"]:
             # remove obj from workflownode
             self.children.remove(node)
-        _core.db.session.commit()
+            _core.db.session.commit()
         if self.settings["endtext"] is not None:
             link = u"/pnode?id={}&key={}".format(node.id, node.get("key"))
             link2 = u"/node?id={}".format(node.id)
@@ -50,14 +52,10 @@ class WorkflowStep_End(WorkflowStep):
             )
 
     def runAction(self, node):
-        if self.settings["endsetupdatetime"]:
-            # insert node into searchindex
-            try:
-                if node.get('updatetime') <= unicode(now()):  # do only if date in the past
-                    node.set('updatetime', unicode(now()))
-                _core.db.session.commit()
-            except:
-                logg.exception("exception in workflow step end, runAction failed")
+        if self.settings["endsetupdatetime"] and node.get('updatetime') <= unicode(now()):
+            node.set('updatetime', unicode(now()))
+        if self.settings["endremove"] and not self.settings["interactive"]:
+            self.children.remove(node)
 
     def admin_settings_get_html_form(self, req):
         return _tal.processTAL(
@@ -69,9 +67,9 @@ class WorkflowStep_End(WorkflowStep):
 
     def admin_settings_save_form_data(self, data):
         data = data.to_dict()
-        for attr in ('endremove', 'endsetupdatetime'):
+        for attr in ('endremove', 'endsetupdatetime', 'interactive'):
             data[attr] = bool(data.get(attr))
         data["endtext"] = data["endtext"] or None
-        assert frozenset(data) == frozenset(("endremove", "endsetupdatetime", "endtext"))
+        assert frozenset(data) == frozenset(self.default_settings)
         self.settings = data
         _core.db.session.commit()

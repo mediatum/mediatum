@@ -1,6 +1,19 @@
 # Change Log
 All notable changes to mediaTUM will be documented in this file.
 
+
+## [v2026.09] - 2026-09-01
+
+### Added
+- Anubis Nix package
+- `interactive` setting for workflowstep `end`
+
+### Changed
+- upgraded Nix packages to 26.11
+- postgresql version 18.4
+- nginx version 1.30.4
+- workflowstep `classify` is now forwarded automatically
+
 ## [v2026.06] - 2026-06-15
 
 ### Added

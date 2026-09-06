@@ -48,8 +48,11 @@ def set_session_timeout(session_timeout):
     :param session_timeout: session timeout in seconds
     :return:
     """
+    # Validate session_timeout is a number to prevent SQL injection
+    # (SET statements don't support parameterized queries in PostgreSQL)
+    timeout_ms = int(session_timeout) * 1000
     _core.db.session.execute("SET transaction_read_only=true")
-    _core.db.session.execute("SET statement_timeout={}".format(session_timeout * 1000))
+    _core.db.session.execute(_sqlalchemy.text("SET statement_timeout=:timeout").bindparams(timeout=timeout_ms))
 
 
 def _rewrite_prefix_search(t):
@@ -218,9 +221,8 @@ def _check_search_indexes_node(type, languages):
     index_auto_prefix = _utils.make_db_auto_prefix(index_prefix)
     current_indexnames = set()
     res = _core.db.session.execute(
-        "SELECT indexname FROM pg_indexes WHERE schemaname = '{schema}' AND tablename = 'node'".format(
-            schema=_DB_SCHEMA_NAME,
-        ))
+        _sqlalchemy.text("SELECT indexname FROM pg_indexes WHERE schemaname = :schema AND tablename = 'node'"),
+        {"schema": _DB_SCHEMA_NAME})
     for index in res.fetchall():
         indexname = index[0]
         if indexname.startswith(index_auto_prefix):
@@ -248,8 +250,13 @@ def _check_search_indexes_node(type, languages):
         map(_operator.methodcaller("create"), needed_indexes)
 
     for unneeded_index in current_indexnames - wanted_indexnames:
+        # Validate index name contains only safe characters to prevent SQL injection
+        # Index names should only contain alphanumeric characters and underscores
+        if not _re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', unneeded_index):
+            logg.warning("Skipping invalid index name: %s", unneeded_index)
+            continue
         _core.db.session.execute(
-            "DROP INDEX {}".format(unneeded_index))
+            _sqlalchemy.text('DROP INDEX IF EXISTS "{}"."{}"'.format(_DB_SCHEMA_NAME, unneeded_index)))
     _core.db.session.commit()
 
 

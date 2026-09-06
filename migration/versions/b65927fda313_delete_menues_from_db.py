@@ -27,8 +27,10 @@ def upgrade():
     results = connection.execute(
         text("SELECT key FROM mediatum.node, lateral jsonb_each_text(system_attrs) WHERE id=1 AND key LIKE 'edit.menu%';")).fetchall()
     for akey in results:
+        # Use parameterized query to prevent SQL injection
         connection.execute(
-            text("update mediatum.node set system_attrs = system_attrs - '" + akey[0] + "' where id=1;")
+            text("update mediatum.node set system_attrs = system_attrs - :key where id=1;"),
+            {"key": akey[0]}
         )
     # Drop admin.menu
     connection.execute(
